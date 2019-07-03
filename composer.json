@@ -3,6 +3,7 @@
     "description": "Laravel Package for creating a SCIM server",
     "type": "library",
     "license": "MIT",
+    "version": "1.0.0-stable",
     "authors": [
         {
             "name": "Arie Timmerman",
