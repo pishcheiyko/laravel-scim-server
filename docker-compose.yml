@@ -1,0 +1,15 @@
+version: '3'
+services:
+    php:
+        restart: always
+        volumes:
+            - "./:/project"
+        build:
+            context: .
+            dockerfile: ./etc/docker/php/Dockerfile
+            args:
+                USER_ID: ${USER_ID:-0}
+                GROUP_ID: ${GROUP_ID:-0}
+        # See https://stackoverflow.com/a/46737529 for details..
+        tty: true
+        stdin_open: true

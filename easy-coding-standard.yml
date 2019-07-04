@@ -1,0 +1,2 @@
+imports:
+    - { resource: 'vendor-bin/easy-coding-standard/vendor/symplify/easy-coding-standard/config/psr2.yml' }
