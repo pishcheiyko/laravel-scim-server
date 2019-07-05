@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Middleware;
+namespace ArieTimmerman\Laravel\SCIMServer\Middleware\Http;
 
 use Closure;
 use Illuminate\Http\Request;
@@ -13,9 +13,9 @@ class SCIMHeaders
         if ($request->method() != 'GET' && $request->header('content-type') != 'application/scim+json' && $request->header('content-type') != 'application/json' && strlen($request->getContent()) > 0) {
             throw new SCIMException(sprintf('The content-type header should be set to "%s"', 'application/scim+json'));
         }
-        
+
         $response = $next($request);
-        
+
         return $response->header('Content-Type', 'application/scim+json');
     }
 }

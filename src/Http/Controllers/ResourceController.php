@@ -142,7 +142,7 @@ class ResourceController extends Controller
         $input = $request->input();
 
         $resourceObject = self::createFromSCIM($resourceType, $input, $pdp, $request);
-        
+
         event(new Create($resourceObject, $isMe));
 
         return $resourceObject;
@@ -158,26 +158,26 @@ class ResourceController extends Controller
     public function create(Request $request, PolicyDecisionPoint $pdp, ResourceType $resourceType, $isMe = false)
     {
         $resourceObject = $this->createObject($request, $pdp, $resourceType, $isMe);
-        
+
         return Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
     }
-    
+
     public function show(Request $request, PolicyDecisionPoint $pdp, ResourceType $resourceType, Model $resourceObject)
     {
         event(new Get($resourceObject));
 
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
-    
+
     public function delete(Request $request, PolicyDecisionPoint $pdp, ResourceType $resourceType, Model $resourceObject)
     {
         $resourceObject->delete();
 
         event(new Delete($resourceObject));
-        
+
         return response(null, 204);
     }
-    
+
     public function replace(Request $request, PolicyDecisionPoint $pdp, ResourceType $resourceType, Model $resourceObject, $isMe = false)
     {
         $originalRaw = Helper::objectToSCIMArray($resourceObject, $resourceType);

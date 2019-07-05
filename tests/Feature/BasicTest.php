@@ -35,7 +35,7 @@ class BasicTest extends TestCase {
         
         $this->withFactories(realpath(dirname(__DIR__).'/database/factories'));
         
-        \ArieTimmerman\Laravel\SCIMServer\RouteProvider::routes();;
+        \ArieTimmerman\Laravel\SCIMServer\Providers\RouteProvider::routes();;
         
         factory(\ArieTimmerman\Laravel\SCIMServer\Tests\Model\User::class, 100)->create();
         

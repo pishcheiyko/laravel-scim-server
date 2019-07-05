@@ -24,7 +24,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "ArieTimmerman\\Laravel\\SCIMServer\\ServiceProvider"
+                "ArieTimmerman\\Laravel\\SCIMServer\\Providers\\ServiceProvider"
             ],
             "aliases": {
                 "SCIMServerHelper": "ArieTimmerman\\Laravel\\SCIMServer\\Helper"

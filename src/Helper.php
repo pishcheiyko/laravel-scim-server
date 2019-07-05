@@ -1,4 +1,5 @@
 <?php
+
 namespace ArieTimmerman\Laravel\SCIMServer;
 
 use ArieTimmerman\Laravel\SCIMServer\Attribute\AttributeMapping;
@@ -7,12 +8,15 @@ use Tmilos\ScimFilterParser\Ast\ComparisonExpression;
 use Tmilos\ScimFilterParser\Ast\Negation;
 use Tmilos\ScimFilterParser\Ast\Conjunction;
 use Tmilos\ScimFilterParser\Ast\Disjunction;
+use Tmilos\ScimFilterParser\Ast\ValuePath;
+use Tmilos\ScimFilterParser\Ast\Factor;
 use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Ast\Path;
 use Tmilos\ScimFilterParser\Ast\AttributePath;
 use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Response;
 
 class Helper
 {
@@ -22,38 +26,48 @@ class Helper
     }
 
     /**
+     * @todo where is ArieTimmerman\Laravel\SCIMServer\Traits\SCIMResource ?
      *
-     * @param unknown $object
+     * @param Arrayable $object
+     * @param ResourceType|null $resourceType
      */
-    public static function prepareReturn(Arrayable $object, ResourceType $resourceType = null)
-    {
-        $result = null;
+    public static function prepareReturn(
+        Arrayable $object,
+        ResourceType $resourceType = null
+    ) {
+        if (!empty($object)
+        &&  isset($object[0])
+        &&  is_object($object[0])
+        // &&  !in_array('ArieTimmerman\Laravel\SCIMServer\Traits\SCIMResource', class_uses(get_class($object[0])))
+        ) {
+            $result = [];
 
-        if (!empty($object) && isset($object[0]) && is_object($object[0])) {
-            if (!in_array('ArieTimmerman\Laravel\SCIMServer\Traits\SCIMResource', class_uses(get_class($object[0])))) {
-                $result = [];
-
-                foreach ($object as $key => $value) {
-                    $result[] = self::objectToSCIMArray($value, $resourceType);
-                }
+            foreach ($object as $key => $value) {
+                $result[] = self::objectToSCIMArray($value, $resourceType);
             }
-        }
 
-        if ($result == null) {
-            $result = $object;
+            return $result;
+        } else {
+            return $object;
         }
-
-        return $result;
     }
-    
-    // TODO: Auto map eloquent attributes with scim naming to the correct attributes
-    public static function objectToSCIMArray($object, ResourceType $resourceType = null)
-    {
+
+    /**
+     * @todo Auto map eloquent attributes with scim naming to the correct attributes
+     *
+     * @param Arrayable $object
+     * @param ResourceType|null $resourceType
+     */
+    public static function objectToSCIMArray(
+        Arrayable $object,
+        ResourceType $resourceType = null
+    ) {
         $userArray = $object->toArray();
-        
+
         // If the getDates-method exists, ensure proper formatting of date attributes
         if (method_exists($object, 'getDates')) {
             $dateAttributes = $object->getDates();
+
             foreach ($dateAttributes as $dateAttribute) {
                 if (isset($userArray[$dateAttribute])) {
                     $userArray[$dateAttribute] = $object->getAttribute($dateAttribute)->format('c');
@@ -61,9 +75,9 @@ class Helper
             }
         }
 
-        $result = [];
+        if (null !== $resourceType) {
+            $result = [];
 
-        if ($resourceType != null) {
             $mapping = $resourceType->getMapping();
 
             $uses = $mapping->getEloquentAttributes();
@@ -74,15 +88,15 @@ class Helper
                 unset($userArray[$key]);
             }
 
-            if (!empty($userArray) && (($resourceType->getConfiguration()['map_unmapped']) ?? false)) {
+            if (!empty($userArray)
+            &&  (($resourceType->getConfiguration()['map_unmapped']) ?? false)) {
                 $namespace = $resourceType->getConfiguration()['unmapped_namespace'] ?? null;
 
-                $parent = null;
-
-                if ($namespace != null) {
+                if (null !== $namespace) {
                     if (!isset($result[$namespace])) {
                         $result[$namespace] = [];
                     }
+
                     $parent = &$result[$namespace];
                 } else {
                     $parent = &$result;
@@ -92,58 +106,74 @@ class Helper
                     $parent[$key] = AttributeMapping::eloquentAttributeToString($value);
                 }
             }
-        } else {
-            $result = $userArray;
-        }
 
-        return $result;
+            return $result;
+        } else {
+            return $userArray;
+        }
     }
 
-
-    public static function getResourceObjectVersion($object)
+    /**
+     * @param Model $object
+     * @return string
+     */
+    public static function getResourceObjectVersion(Model $object): string
     {
-        $version = null;
-
-        if (method_exists($object, "getSCIMVersion")) {
+        if (method_exists($object, 'getSCIMVersion')) {
             $version = $object->getSCIMVersion();
         } else {
-            $version = sha1($object->getKey() . $object->updated_at . $object->created_at);
+            $version = sha1("{$object->getKey()}{$object->updated_at}{$object->created_at}");
         }
-        
-        // Entity tags uniquely representing the requested resources. They are a string of ASCII characters placed between double quotes
+
+        // Entity tags uniquely representing the requested resources.
+        // They are a string of ASCII characters placed between double quotes.
         return sprintf('W/"%s"', $version);
     }
 
     /**
-     *
-     * @param unknown $object
-     * @param ResourceType $resourceType
+     * @param Model $object
+     * @param ResourceType|null $resourceType
+     * @return Response
      */
-    public static function objectToSCIMResponse(Model $object, ResourceType $resourceType = null)
-    {
-        return response(self::objectToSCIMArray($object, $resourceType))->setEtag(self::getResourceObjectVersion($object));
+    public static function objectToSCIMResponse(
+        Model $object,
+        ResourceType $resourceType = null
+    ): Response {
+        return response(self::objectToSCIMArray($object, $resourceType))
+            ->setEtag(self::getResourceObjectVersion($object));
     }
 
-    public static function objectToSCIMCreateResponse(Model $object, ResourceType $resourceType = null)
-    {
-        return self::objectToSCIMResponse($object, $resourceType)->setStatusCode(201);
+    /**
+     * @param Model $object
+     * @param ResourceType|null $resourceType
+     * @return Response
+     */
+    public static function objectToSCIMCreateResponse(
+        Model $object,
+        ResourceType $resourceType = null
+    ): Response {
+        return self::objectToSCIMResponse($object, $resourceType)
+            ->setStatusCode(201);
     }
 
     /**
      * See https://tools.ietf.org/html/rfc7644#section-3.4.2.2
-     * @param unknown $query
-     * @param unknown $node
+     *
+     * @param ResourceType $resourceType
+     * @param mixed $query
+     * @param mixed $node
+     *
      * @throws SCIMException
+     * @throws \RuntimeException
      */
     public static function scimFilterToLaravelQuery(ResourceType $resourceType, &$query, $node)
     {
-         
-        //var_dump($node);exit;
-
         if ($node instanceof Negation) {
             $filter = $node->getFilter();
 
-            throw (new SCIMException('Negation filters not supported'))->setCode(400)->setScimType('invalidFilter');
+            throw (new SCIMException('Negation filters not supported'))
+                ->setCode(400)
+                ->setScimType('invalidFilter');
         } elseif ($node instanceof ComparisonExpression) {
             $operator = strtolower($node->operator);
 
@@ -153,13 +183,13 @@ class Helper
         } elseif ($node instanceof Conjunction) {
             foreach ($node->getFactors() as $factor) {
                 $query->where(function ($query) use ($factor, $resourceType) {
-                    Helper::scimFilterToLaravelQuery($resourceType, $query, $factor);
+                    self::scimFilterToLaravelQuery($resourceType, $query, $factor);
                 });
             }
         } elseif ($node instanceof Disjunction) {
             foreach ($node->getTerms() as $term) {
                 $query->orWhere(function ($query) use ($term, $resourceType) {
-                    Helper::scimFilterToLaravelQuery($resourceType, $query, $term);
+                    self::scimFilterToLaravelQuery($resourceType, $query, $term);
                 });
             }
         } elseif ($node instanceof ValuePath) {
@@ -177,17 +207,14 @@ class Helper
                     ->from('users AS users2')
                     ->whereRaw('users.id = users2.id');
             });
-                    
-                    
+
         //$node->
         } elseif ($node instanceof Factor) {
-            var_dump($node);
-            die("Not ok hier!\n");
+            throw new \RuntimeException('Not ok hier! '.var_export($node, true));
         }
     }
 
     /**
-     *
      * $scimAttribute could be
      * - urn:ietf:params:scim:schemas:core:2.0:User.userName
      * - userName
@@ -197,20 +224,27 @@ class Helper
      * - emails.0.value
      * - schemas.0
      *
-     * @param unknown $name
-     * @param unknown $scimAttribute
-     * @return AttributeMapping
+     * @todo See 'TODO:' below..
+     * @todo How about groups?
+     * @todo The method never returns null..
+     *
+     * @param ResourceType $resourceType
+     * @param string $scimAttribute
+     * @return AttributeMapping|null
      */
-    public static function getAttributeConfig(ResourceType $resourceType, $scimAttribute)
-    {
+    public static function getAttributeConfig(
+        ResourceType $resourceType,
+        string $scimAttribute
+    ): ?AttributeMapping {
         $parser = new Parser(Mode::PATH());
 
         $scimAttribute = preg_replace('/\.[0-9]+$/', '', $scimAttribute);
         $scimAttribute = preg_replace('/\.[0-9]+\./', '.', $scimAttribute);
 
         $path = $parser->parse($scimAttribute);
-        
-        //TODO: FIX this. If $scimAttribute is a schema-indication, it should be considered as a schema
+
+        // TODO: FIX this. If $scimAttribute is a schema-indication,
+        //       it should be considered as a schema.
         if ($scimAttribute == 'urn:ietf:params:scim:schemas:core:2.0:User') {
             $attributePath = new AttributePath();
             $attributePath->schema = 'urn:ietf:params:scim:schemas:core:2.0:User';
@@ -221,57 +255,82 @@ class Helper
         return $resourceType->getMapping()->getSubNodeWithPath($path);
     }
 
-    public static function getAttributeConfigOrFail(ResourceType $resourceType, $scimAttribute)
-    {
+    /**
+     * @param ResourceType $resourceType
+     * @param string $scimAttribute
+     * @return AttributeMapping
+     * @throws SCIMException
+     */
+    public static function getAttributeConfigOrFail(
+        ResourceType $resourceType,
+        string $scimAttribute
+    ): AttributeMapping {
         $result = self::getAttributeConfig($resourceType, $scimAttribute);
 
-        if ($result == null) {
-            throw (new SCIMException(sprintf('Unknown attribute "%s"', $scimAttribute)))->setCode(400);
-        }
-
-        return $result;
-    }
-
-    public static function getEloquentSortAttribute(ResourceType $resourceType, $scimAttribute)
-    {
-        $mapping = self::getAttributeConfig($resourceType, $scimAttribute);
-
-        if ($mapping == null || $mapping->getSortAttribute() == null) {
-            throw (new SCIMException("Invalid sort property"))->setCode(400)->setScimType('invalidFilter');
-        }
-
-        return $mapping->getSortAttribute();
-    }
-
-    public static function getFlattenKey($parts, $schemas)
-    {
-        $result = "";
-
-        $partsCopy = $parts;
-
-        $first = array_first($partsCopy);
-
-        if ($first != null) {
-            if (in_array($first, $schemas)) {
-                $result .= $first . ":";
-                array_shift($partsCopy);
-            } else {
-                // If no schema is provided, use the first schema as its schema.
-                $result .= $schemas[0] . ":";
-            }
-
-            $result .= implode(".", $partsCopy);
-        } else {
-            throw (new SCIMException("unknown error. " . json_encode($partsCopy)));
+        if (null === $result) {
+            throw (new SCIMException(sprintf('Unknown attribute "%s"', $scimAttribute)))
+                ->setCode(400);
         }
 
         return $result;
     }
 
     /**
-     *
+     * @param ResourceType $resourceType
+     * @param string $scimAttribute
+     * @return string
+     * @throws SCIMException
      */
-    public static function flatten($array, array $schemas, $parts = [])
+    public static function getEloquentSortAttribute(
+        ResourceType $resourceType,
+        string $scimAttribute
+    ): string {
+        $mapping = self::getAttributeConfig($resourceType, $scimAttribute);
+
+        if (null === $mapping || null === $mapping->getSortAttribute()) {
+            throw (new SCIMException('Invalid sort property'))
+                ->setCode(400)
+                ->setScimType('invalidFilter');
+        }
+
+        return $mapping->getSortAttribute();
+    }
+
+    /**
+     * @param array $parts
+     * @param array $schemas
+     * @return string
+     * @throws SCIMException
+     */
+    public static function getFlattenKey(array $parts, array $schemas): string
+    {
+        $partsCopy = $parts;
+
+        $first = array_first($partsCopy);
+
+        if (null === $first) {
+            throw (new SCIMException('Unknown error. ' . json_encode($partsCopy)));
+        }
+
+        if (in_array($first, $schemas)) {
+            $result = '{$first}:';
+            array_shift($partsCopy);
+        } else { // If no schema is provided, use the first schema as its schema.
+            $result = '{$schemas[0]}:';
+        }
+
+        $result .= implode('.', $partsCopy);
+
+        return $result;
+    }
+
+    /**
+     * @param array $array
+     * @param array $schemas
+     * @param array $parts
+     * @return array
+     */
+    public static function flatten(array $array, array $schemas, array $parts = []): array
     {
         $result = [];
 
@@ -285,7 +344,7 @@ class Helper
 
                 $result[$final][$key] = $value;
             } elseif (is_array($value)) {
-                //Empty values do matter. For example in case of empty-ing a multi-valued attribute via PUT/replace
+                // Empty values do matter, e.g. in case of empty-ing a multi-valued attribute via PUT/replace
                 if (empty($value)) {
                     $partsCopy = $parts;
                     $partsCopy[] = $key;

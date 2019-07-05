@@ -1,8 +1,10 @@
 <?php
-namespace ArieTimmerman\Laravel\SCIMServer;
+
+namespace ArieTimmerman\Laravel\SCIMServer\Providers;
 
 use Route;
 use Illuminate\Support\Facades\Auth;
+use ArieTimmerman\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
 use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
 use Illuminate\Http\Request;
 
@@ -16,9 +18,7 @@ class RouteProvider
     public static function routes(array $options = [])
     {
         Route::prefix(self::$prefix)->group(function () use ($options) {
-            Route::prefix('v2')->middleware([
-                'ArieTimmerman\Laravel\SCIMServer\Middleware\SCIMHeaders'
-            ])
+            Route::prefix('v2')->middleware([SCIMHeaders::class])
                 ->group(function () use ($options) {
                     self::allRoutes($options);
                 });

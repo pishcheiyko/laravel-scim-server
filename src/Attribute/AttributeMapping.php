@@ -534,23 +534,21 @@ class AttributeMapping
             $getAttributePath = function () {
                 return $this->attributePath;
             };
-    
+
             $getValuePath = function () {
                 return $this->valuePath;
             };
-    
+
             $getFilter = function () {
                 return $this->filter;
             };
-            
+
             $first = @$getAttributePath->call($getValuePath->call($path));
             $filter = @$getFilter->call($getValuePath->call($path));
             $last = $getAttributePath->call($path);
-            
+
             return $this->getNode($first)->withFilter($filter)->getNode($last);
         }
-    
-        return $result;
     }
 
     public function applyWhereConditionDirect($attribute, &$query, $operator, $value)
