@@ -2,75 +2,104 @@
 
 namespace ArieTimmerman\Laravel\SCIMServer\Providers;
 
-use Route;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use ArieTimmerman\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
 use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use Illuminate\Http\Request;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\SchemaController;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ServiceProviderController;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceTypesController;
 
 /**
  * Helper class for the URL shortener
  */
 class RouteProvider
 {
-    protected static $prefix = 'scim';
-
+    /**
+     * @param array $options
+     */
     public static function routes(array $options = [])
     {
-        Route::prefix(self::$prefix)->group(function () use ($options) {
+        Route::prefix('scim')->group(function () use ($options) {
+            Route::prefix('v1')
+                ->group(function () {
+                    Route::fallback(function () {
+                        $url = url('scim/v2');
+                        throw (new SCIMException("Only SCIM v2 is supported. Accessible under {$url}"))
+                            ->setHttpCode(501)
+                            ->setScimType('invalidVers');
+                    });
+                });
+
             Route::prefix('v2')->middleware([SCIMHeaders::class])
                 ->group(function () use ($options) {
-                    self::allRoutes($options);
+                    static::allRoutes($options);
                 });
-            
-            $routeWrongVersion = function () {
-                throw (new SCIMException('Only SCIM v2 is supported. Accessible under ' . url(self::$prefix . '/v2')))->setCode(501)
-                    ->setScimType('invalidVers');
-            };
-            
-            Route::get('v1', '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@wrongVersion');
-            Route::prefix('v1')->group(function () use ($options, $routeWrongVersion) {
-                Route::fallback('\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@wrongVersion');
-            });
         });
     }
 
-    public static function meRoutes(array $options = [])
-    {
-        Route::get('/scim/v2/Me', '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController@getMe')->name('scim.me.get');
-        Route::put('/scim/v2/Me', '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController@replaceMe')->name('scim.me.put');
-    }
-
-    public static function meRoutePost(array $options = [])
-    {
-        Route::post('/scim/v2/Me', '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController@createMe')->name('scim.me.post');
-    }
-
+    /**
+     * @param array $options
+     */
     public static function publicRoutes(array $options = [])
     {
-        Route::get("/scim/v2/ServiceProviderConfig", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ServiceProviderController@index')->name('scim.serviceproviderconfig');
-        
-        Route::get("/scim/v2/Schemas", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\SchemaController@index');
-        Route::get("/scim/v2/Schemas/{id}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\SchemaController@show')->name('scim.schemas');
-        
-        Route::get("/scim/v2/ResourceTypes", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceTypesController@index');
-        Route::get("/scim/v2/ResourceTypes/{id}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceTypesController@show')->name('scim.resourcetype');
+        Route::get('/ServiceProviderConfig', ServiceProviderController::class . '@index')
+            ->name('scim.serviceproviderconfig');
+
+        Route::get('/Schemas', SchemaController::class . '@index');
+        Route::get('/Schemas/{id}', SchemaController::class . '@show')->name('scim.schemas');
+
+        Route::get('/ResourceTypes', ResourceTypesController::class . '@index');
+        Route::get('/ResourceTypes/{id}', ResourceTypesController::class . '@show')
+            ->name('scim.resourcetype');
     }
 
-    private static function allRoutes(array $options = [])
+    /**
+     * Use a policy instance to control an access to this ones..
+     *
+     * @param array $options
+     */
+    public static function meRoutes(array $options = [])
     {
-        Route::post('.search', '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@notImplemented');
-        
-        // TODO: Use the attributes parameters ?attributes=userName, excludedAttributes=asdg,asdg (respect "returned" settings "always")
-        Route::get('/{resourceType}/{resourceObject}', '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@show')->name('scim.resource');
-        Route::get("/{resourceType}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@index')->name('scim.resources');
-        
-        Route::post("/{resourceType}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@create');
-        
-        Route::put("/{resourceType}/{resourceObject}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@replace');
-        Route::patch("/{resourceType}/{resourceObject}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@update');
-        Route::delete("/{resourceType}/{resourceObject}", '\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@delete');
-        
-        Route::fallback('\ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController@notImplemented');
+        Route::get('/Me', MeController::class . '@show')->name('scim.me.get');
+        Route::post('/Me', MeController::class . '@create')->name('scim.me.post');
+        Route::put('/Me', MeController::class . '@replace')->name('scim.me.put');
+        Route::patch('/Me', MeController::class . '@update')->name('scim.me.patch');
+
+        Route::delete('/Me', MeController::class . '@notImplemented');
+    }
+
+    /**
+     * Use a policy instance to control an access to this ones..
+     *
+     * @param array $options
+     */
+    public static function resourceRoutes(array $options = [])
+    {
+        Route::get('/{resourceType}/{resourceObject}', ResourceController::class . '@show')
+            ->name('scim.resource');
+        Route::get('/{resourceType}', ResourceController::class . '@index')
+            ->name('scim.resources');
+
+        Route::post('/{resourceType}', ResourceController::class . '@create');
+
+        Route::put('/{resourceType}/{resourceObject}', ResourceController::class . '@replace');
+        Route::patch('/{resourceType}/{resourceObject}', ResourceController::class . '@update');
+        Route::delete('/{resourceType}/{resourceObject}', ResourceController::class . '@delete');
+    }
+
+    /**
+     * @param array $options
+     */
+    protected static function allRoutes(array $options = [])
+    {
+        static::resourceRoutes($options);
+        // static::meRoutes($options);
+        // static::publicRoutes($options);
+
+        Route::post('/Bulk', ResourceController::class . '@notImplemented');
+        Route::post('.search', ResourceController::class . '@notImplemented');
+        Route::fallback(ResourceController::class . '@notImplemented');
     }
 }

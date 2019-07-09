@@ -2,7 +2,8 @@
 
 namespace ArieTimmerman\Laravel\SCIMServer;
 
-use ArieTimmerman\Laravel\SCIMServer\Attribute\AttributeMapping;
+use Illuminate\Http\Response;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Arrayable;
 use Tmilos\ScimFilterParser\Ast\ComparisonExpression;
 use Tmilos\ScimFilterParser\Ast\Negation;
@@ -14,9 +15,8 @@ use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Ast\Path;
 use Tmilos\ScimFilterParser\Ast\AttributePath;
+use ArieTimmerman\Laravel\SCIMServer\Attributes\AttributeMapping;
 use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Response;
 
 class Helper
 {
@@ -30,20 +30,19 @@ class Helper
      *
      * @param Arrayable $object
      * @param ResourceType|null $resourceType
+     * @return array
      */
     public static function prepareReturn(
         Arrayable $object,
         ResourceType $resourceType = null
-    ) {
-        if (!empty($object)
-        &&  isset($object[0])
-        &&  is_object($object[0])
-        // &&  !in_array('ArieTimmerman\Laravel\SCIMServer\Traits\SCIMResource', class_uses(get_class($object[0])))
-        ) {
+    ): array {
+        $object = $object->toArray();
+
+        if (isset($object[0]) && is_object($object[0])) {
             $result = [];
 
             foreach ($object as $key => $value) {
-                $result[] = self::objectToSCIMArray($value, $resourceType);
+                $result[] = static::objectToSCIMArray($value, $resourceType);
             }
 
             return $result;
@@ -57,11 +56,12 @@ class Helper
      *
      * @param Arrayable $object
      * @param ResourceType|null $resourceType
+     * @return array
      */
     public static function objectToSCIMArray(
         Arrayable $object,
         ResourceType $resourceType = null
-    ) {
+    ): array {
         $userArray = $object->toArray();
 
         // If the getDates-method exists, ensure proper formatting of date attributes
@@ -139,8 +139,8 @@ class Helper
         Model $object,
         ResourceType $resourceType = null
     ): Response {
-        return response(self::objectToSCIMArray($object, $resourceType))
-            ->setEtag(self::getResourceObjectVersion($object));
+        return response(static::objectToSCIMArray($object, $resourceType))
+            ->setEtag(static::getResourceObjectVersion($object));
     }
 
     /**
@@ -152,7 +152,7 @@ class Helper
         Model $object,
         ResourceType $resourceType = null
     ): Response {
-        return self::objectToSCIMResponse($object, $resourceType)
+        return static::objectToSCIMResponse($object, $resourceType)
             ->setStatusCode(201);
     }
 
@@ -172,7 +172,7 @@ class Helper
             $filter = $node->getFilter();
 
             throw (new SCIMException('Negation filters not supported'))
-                ->setCode(400)
+                ->setHttpCode(400)
                 ->setScimType('invalidFilter');
         } elseif ($node instanceof ComparisonExpression) {
             $operator = strtolower($node->operator);
@@ -183,13 +183,13 @@ class Helper
         } elseif ($node instanceof Conjunction) {
             foreach ($node->getFactors() as $factor) {
                 $query->where(function ($query) use ($factor, $resourceType) {
-                    self::scimFilterToLaravelQuery($resourceType, $query, $factor);
+                    static::scimFilterToLaravelQuery($resourceType, $query, $factor);
                 });
             }
         } elseif ($node instanceof Disjunction) {
             foreach ($node->getTerms() as $term) {
                 $query->orWhere(function ($query) use ($term, $resourceType) {
-                    self::scimFilterToLaravelQuery($resourceType, $query, $term);
+                    static::scimFilterToLaravelQuery($resourceType, $query, $term);
                 });
             }
         } elseif ($node instanceof ValuePath) {
@@ -265,11 +265,11 @@ class Helper
         ResourceType $resourceType,
         string $scimAttribute
     ): AttributeMapping {
-        $result = self::getAttributeConfig($resourceType, $scimAttribute);
+        $result = static::getAttributeConfig($resourceType, $scimAttribute);
 
         if (null === $result) {
             throw (new SCIMException(sprintf('Unknown attribute "%s"', $scimAttribute)))
-                ->setCode(400);
+                ->setHttpCode(400);
         }
 
         return $result;
@@ -278,18 +278,18 @@ class Helper
     /**
      * @param ResourceType $resourceType
      * @param string $scimAttribute
-     * @return string
+     * @return string|null
      * @throws SCIMException
      */
     public static function getEloquentSortAttribute(
         ResourceType $resourceType,
         string $scimAttribute
-    ): string {
-        $mapping = self::getAttributeConfig($resourceType, $scimAttribute);
+    ): ?string {
+        $mapping = static::getAttributeConfig($resourceType, $scimAttribute);
 
         if (null === $mapping || null === $mapping->getSortAttribute()) {
             throw (new SCIMException('Invalid sort property'))
-                ->setCode(400)
+                ->setHttpCode(400)
                 ->setScimType('invalidFilter');
         }
 
@@ -336,7 +336,7 @@ class Helper
 
         foreach ($array as $key => $value) {
             if (is_numeric($key)) {
-                $final = self::getFlattenKey($parts, $schemas);
+                $final = static::getFlattenKey($parts, $schemas);
 
                 if (!isset($result[$final])) {
                     $result[$final] = [];
@@ -348,16 +348,16 @@ class Helper
                 if (empty($value)) {
                     $partsCopy = $parts;
                     $partsCopy[] = $key;
-                    $final = self::getFlattenKey($partsCopy, $schemas);
+                    $final = static::getFlattenKey($partsCopy, $schemas);
                     $result[$final] = $value;
                 } else {
-                    $result = $result + self::flatten($value, $schemas, array_merge($parts, [$key]));
+                    $result = $result + static::flatten($value, $schemas, array_merge($parts, [$key]));
                 }
             } else {
                 $partsCopy = $parts;
                 $partsCopy[] = $key;
 
-                $result[self::getFlattenKey($partsCopy, $schemas)] = $value;
+                $result[static::getFlattenKey($partsCopy, $schemas)] = $value;
             }
         }
 

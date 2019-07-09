@@ -2,79 +2,115 @@
 
 namespace ArieTimmerman\Laravel\SCIMServer;
 
-use ArieTimmerman\Laravel\SCIMServer\Attribute\AttributeMapping;
+use ArieTimmerman\Laravel\SCIMServer\Attributes\AttributeMapping;
 
 class ResourceType
 {
-    protected $configuration = null;
-    
-    protected $name = null;
-    
-    public function __construct($name, $configuration)
+    /** @var array */
+    protected $configuration;
+    /** @var string */
+    protected $name;
+
+    /**
+     * @param string $name
+     * @param array $configuration
+     */
+    public function __construct(string $name, array $configuration)
     {
+        $this->name = $name;
         $this->configuration = $configuration;
     }
-    
-    public function getConfiguration()
+
+    /**
+     * @return array
+     */
+    public function getConfiguration(): array
     {
         return $this->configuration;
     }
-    
-    public function getMapping()
+
+    /**
+     * @return AttributeMapping
+     */
+    public function getMapping(): AttributeMapping
     {
-        return AttributeMapping::object($this->configuration['mapping'] ?? [])->setDefaultSchema($this->configuration['schema']);
+        $mapping = AttributeMapping::object($this->configuration['mapping'] ?? [])
+            ->setDefaultSchema($this->configuration['schema']);
+
+        return $mapping;
     }
-    
-    public function getName()
+
+    /**
+     * @return string
+     */
+    public function getName(): string
     {
         return $this->name;
     }
-    
+
+    /**
+     * @return mixed
+     */
     public function getSchema()
     {
         return $this->configuration['schema'];
     }
-    
-    public function getClass()
+
+    /**
+     * @return string
+     */
+    public function getClass(): string
     {
         return $this->configuration['class'];
     }
 
-    public function getValidations()
+    /**
+     * @return array
+     */
+    public function getValidations(): array
     {
         return $this->configuration['validations'];
     }
 
-    public function getWithRelations()
+    /**
+     * @return array
+     */
+    public function getWithRelations(): array
     {
         return $this->configuration['withRelations'] ?? [];
     }
-    
-    public static function user()
+
+    /**
+     * @return ResourceType
+     */
+    public static function user(): ResourceType
     {
         return new ResourceType('Users', resolve(SCIMConfig::class)->getUserConfig());
     }
-    
-    public function getAllAttributeConfigs($mapping = -1)
+
+    /**
+     * @return array
+     */
+    public function getAllAttributeConfigs($mapping = -1): array
     {
         $result = [];
-        
+
         if ($mapping == -1) {
             $mapping = $this->getMapping();
         }
-        
+
         foreach ($mapping as $key => $value) {
             if ($value instanceof AttributeMapping && $value != null) {
                 $result[] = $value;
             } elseif (is_array($value)) {
                 $extra = $this->getAllAttributeConfigs($value);
-                
+
                 if (!empty($extra)) {
                     $result = array_merge($result, $extra);
                 }
             }
         }
-        
+
         return $result;
     }
 }

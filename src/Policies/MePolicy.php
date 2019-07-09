@@ -1,13 +1,13 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\PolicyDecisionPoint;
+namespace ArieTimmerman\Laravel\SCIMServer\Policies;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use ArieTimmerman\Laravel\SCIMServer\ResourceType;
-use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyDecisionInterface;
+use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyInterface;
 
-class MePolicyDecisionPoint implements PolicyDecisionInterface
+class MePolicy implements PolicyInterface
 {
     /**
      * {@inheritdoc}
@@ -17,7 +17,7 @@ class MePolicyDecisionPoint implements PolicyDecisionInterface
         string $operation,
         array $attributes,
         ResourceType $resourceType,
-        ?Model $resourceObject
+        Model $resourceObject = null
     ): bool {
         return true;
     }

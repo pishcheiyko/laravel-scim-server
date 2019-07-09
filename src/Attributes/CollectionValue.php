@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Attribute;
+namespace ArieTimmerman\Laravel\SCIMServer\Attributes;
 
 class CollectionValue extends AttributeMapping
 {

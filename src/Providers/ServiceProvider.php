@@ -4,14 +4,21 @@ namespace ArieTimmerman\Laravel\SCIMServer\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Routing\Router;
-use Illuminate\Support\ServiceProvider as BaseServiceProvider
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use ArieTimmerman\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
 use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController;
+use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController;
+use ArieTimmerman\Laravel\SCIMServer\Policies\MePolicy;
+use ArieTimmerman\Laravel\SCIMServer\Policies\ResourcePolicy;
+use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyInterface;
 
 class ServiceProvider extends BaseServiceProvider
 {
     /**
      * Bootstrap any package services.
+     *
+     * @param Router $router
      */
     public function boot(Router $router)
     {
@@ -21,9 +28,9 @@ class ServiceProvider extends BaseServiceProvider
         $router->bind('resourceType', function ($name, $route) {
             $config = resolve(SCIMConfig::class)->getConfigForResource($name);
 
-            if ($config == null) {
+            if (null === $config) {
                 throw (new SCIMException(sprintf('No resource "%s" found.', $name)))
-                    ->setCode(404);
+                    ->setHttpCode(404);
             }
 
             return new ResourceType($name, $config);
@@ -34,16 +41,16 @@ class ServiceProvider extends BaseServiceProvider
 
             if (!$resourceType) {
                 throw (new SCIMException('ResourceType not provided'))
-                    ->setCode(404);
+                    ->setHttpCode(404);
             }
 
             $class = $resourceType->getClass();
 
             $resourceObject = $class::with($resourceType->getWithRelations())->find($id);
 
-            if ($resourceObject == null) {
+            if (null === $resourceObject) {
                 throw (new SCIMException(sprintf('Resource "%s" not found', $id)))
-                    ->setCode(404);
+                    ->setHttpCode(404);
             }
 
             if (($matchIf = \request()->header('IF-Match'))) {
@@ -54,7 +61,7 @@ class ServiceProvider extends BaseServiceProvider
                 if (!in_array($currentVersion, $versionsAllowed)
                 &&  !in_array('*', $versionsAllowed)) {
                     throw (new SCIMException('Failed to update.  Resource changed on the server.'))
-                        ->setCode(412);
+                        ->setHttpCode(412);
                 }
             }
 
@@ -69,11 +76,21 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        $this->registerPolicies();
+    }
 
-//$this->app->alias('bugsnag.multi', \Illuminate\Contracts\Logging\Log::class);
-//!!!
-// bind ArieTimmerman\Laravel\SCIMServer\PolicyDecisionPoint\ResourcePolicyDecisionPoint
-// bind ArieTimmerman\Laravel\SCIMServer\PolicyDecisionPoint\MePolicyDecisionPoint
+    protected function registerPolicies()
+    {
+        $this->app->when(MeController::class)
+          ->needs(PolicyInterface::class)
+          ->give(function () {
+              return new MePolicy();
+          });
 
+        $this->app->when(ResourceController::class)
+          ->needs(PolicyInterface::class)
+          ->give(function () {
+              return new ResourcePolicy();
+          });
     }
 }

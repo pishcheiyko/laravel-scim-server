@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use ArieTimmerman\Laravel\SCIMServer\ResourceType;
 
-interface PolicyDecisionPointInterface
+interface PolicyInterface
 {
     const OPERATION_GET = 'GET';
     const OPERATION_POST = 'POST';
@@ -27,6 +27,6 @@ interface PolicyDecisionPointInterface
         string $operation,
         array $attributes,
         ResourceType $resourceType,
-        ?Model $resourceObject
+        Model $resourceObject = null
     ): bool;
 }
