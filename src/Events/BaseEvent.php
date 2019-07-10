@@ -15,20 +15,16 @@ class BaseEvent implements EventInterface
 
     /** @var Model */
     protected $model;
-    /** @var string */
-    protected $origin;
     /** @var array */
     protected $extra = [];
 
     /**
      * @param Model $model
-     * @param string $origin
      * @param array $extra
      */
-    public function __construct(Model $model, string $origin, array $extra = [])
+    public function __construct(Model $model, array $extra = [])
     {
         $this->model = $model;
-        $this->origin = $origin;
         $this->extra = $extra;
     }
 
@@ -38,14 +34,6 @@ class BaseEvent implements EventInterface
     public function getModel(): Model
     {
         return $this->model;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getOrigin(): string
-    {
-        return $this->origin;
     }
 
     /**

@@ -15,9 +15,4 @@ interface EventInterface
      * @return array
      */
     public function getExtra(): array;
-
-    /**
-     * @return string
-     */
-    public function getOrigin(): string;
 }

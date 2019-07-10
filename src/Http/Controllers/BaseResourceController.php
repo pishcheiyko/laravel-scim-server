@@ -58,7 +58,9 @@ class BaseResourceController extends BaseController
                 ->setHttpCode(403);
         }
 
-        event(new Get($resourceObject, static::class));
+        event(new Get($resourceObject, [
+            'origin' => static::class,
+        ]));
 
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
@@ -85,7 +87,9 @@ class BaseResourceController extends BaseController
 
         $resourceObject->delete();
 
-        event(new Delete($resourceObject, static::class));
+        event(new Delete($resourceObject, [
+            'origin' => static::class,
+        ]));
 
         return response(null, 204);
     }
@@ -140,7 +144,9 @@ class BaseResourceController extends BaseController
             $attributeConfig->writeAfter($flattened[$attributeConfig->getFullKey()], $resourceObject);
         }
 
-        event(new Create($resourceObject, static::class));
+        event(new Create($resourceObject, [
+            'origin' => static::class,
+        ]));
         
         return Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
     }
@@ -215,7 +221,10 @@ class BaseResourceController extends BaseController
 
         $resourceObject->save();
 
-        event(new Replace($resourceObject, static::class, $originalRaw));
+        event(new Replace($resourceObject, [
+            'origin' => static::class,
+            'previous' => $originalRaw,
+        ]));
 
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
@@ -308,7 +317,10 @@ class BaseResourceController extends BaseController
         
         $resourceObject->save();
 
-        event(new Patch($resourceObject, static::class, $oldObject));
+        event(new Patch($resourceObject, [
+            'origin' => static::class,
+            'previous' => $oldObject,
+        ]));
         
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
