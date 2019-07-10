@@ -5,6 +5,7 @@ namespace UniqKey\Laravel\SCIMServer;
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Facades\DB;
 use Tmilos\ScimFilterParser\Ast\ComparisonExpression;
 use Tmilos\ScimFilterParser\Ast\Negation;
 use Tmilos\ScimFilterParser\Ast\Conjunction;
@@ -194,6 +195,8 @@ class Helper
                 });
             }
         } elseif ($node instanceof ValuePath) {
+            // TODO: This code is wrong!!!
+
             // ->filer
             $getAttributePath = function () {
                 return $this->attributePath;

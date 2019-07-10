@@ -12,6 +12,9 @@ use UniqKey\Laravel\SCIMServer\Http\Controllers\ResourceController;
 use UniqKey\Laravel\SCIMServer\Policies\MePolicy;
 use UniqKey\Laravel\SCIMServer\Policies\ResourcePolicy;
 use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
+use UniqKey\Laravel\SCIMServer\SCIMConfig;
+use UniqKey\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\Helper;
 
 class ServiceProvider extends BaseServiceProvider
 {

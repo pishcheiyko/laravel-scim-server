@@ -2,50 +2,58 @@
 
 namespace UniqKey\Laravel\SCIMServer\Attributes;
 
+use Closure;
+use Illuminate\Support\Collection as LaravelCollection;
+use Illuminate\Database\Eloquent\Model;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class Collection extends AttributeMapping
 {
-    protected $collection = null;
+    /** @var array */
+    protected $collection = [];
 
-    public function setStaticCollection($collection)
+    /**
+     * @param array $collection
+     * @return $this
+     */
+    public function setStaticCollection(array $collection)
     {
         $this->collection = $collection;
-
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @todo See 'TODO' below
+     */
     public function add($value, &$object)
     {
-
-        //only for creation requests
-        if ($object->id == null) {
+        if (null === $object->id) {  // only for creation requests
             foreach ($value as $key => $v) {
                 $this->getSubNode($key)->add($v, $object);
             }
         } else {
             foreach ($value as $key => $v) {
-                // var_dump($value);
-                // echo $this->getFullKey() . " - " .  $key . "\n";
+                $subnode = $this->getSubNode($key);
 
-                if ($this->getSubNode($key) != null) {
-                    $this->getSubNode($key)->add($v, $object);
+                if (null !== $subnode) {
+                    $subnode->add($v, $object);
                 } else {
-                    //TODO: log ignore
+                    // TODO: log ignore
                 }
             }
-
-            // throw (new SCIMException('Add is not implemented for updates of ' . $this->getFullKey()))->setHttpCode(501);
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function remove($value, &$object)
     {
-        // throw (new SCIMException('Remove is not implemented for ' . $this->getFullKey()))->setHttpCode(501);
-
         foreach ($this->collection as $c) {
             foreach ($c as $k => $v) {
-                $mapping = AttributeMapping::ensureAttributeMappingObject($v);
+                $mapping = static::ensureAttributeMappingObject($v);
 
                 if ($mapping->isWriteSupported()) {
                     $mapping->remove($value, $object);
@@ -54,61 +62,90 @@ class Collection extends AttributeMapping
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function replace($value, &$object)
     {
         $this->remove($value, $object);
 
         $this->add($value, $object);
-
-        // var_dump(json_encode($object));exit;
-        // throw (new SCIMException('Replace is not implemented for ' . $this->getFullKey()))->setHttpCode(501);
     }
 
-    public function getEloquentAttributes()
+    /**
+     * {@inheritdoc}
+     */
+    public function getEloquentAttributes(): array
     {
         $result = $this->eloquentAttributes;
 
         foreach ($this->collection as $value) {
-            $result = array_merge($result, AttributeMapping::ensureAttributeMappingObject($value)->getEloquentAttributes());
+            $items = static::ensureAttributeMappingObject($value)->getEloquentAttributes();
+            $result = array_merge($result, $items);
         }
 
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getSubNode($key, $schema = null)
     {
-        if ($key == null) {
+        if (null === $key) {
             return $this;
+        } elseif (false === isset($this->collection[0][$key])) {
+            return null;
         }
 
-        if (!empty($this->collection) && is_array($this->collection[0]) && array_key_exists($key, $this->collection[0])) {
-            $parent = $this;
+        $parent = $this;
 
-            return (new CollectionValue())->setEloquentAttributes($this->collection[0][$key]->getEloquentAttributes())->setKey($key)->setParent($this)->setAdd(function ($value, &$object) use ($key, $parent) {
-                $collection = Collection::filterCollection($parent->filter, collect($parent->collection), $object);
+        return (new CollectionValue())
+            ->setEloquentAttributes($this->collection[0][$key]->getEloquentAttributes())
+            ->setKey($key)
+            ->setParent($this)
+            ->setAdd(function ($value, &$object) use ($key, $parent) {
+                $collection = Collection::filterCollection(
+                    $parent->filter,
+                    collect($parent->collection),
+                    $object
+                );
 
                 $result = [];
 
                 foreach ($collection as $o) {
                     $o[$key]->add($value, $object);
                 }
-            })->setRead(function (&$object) use ($key, $parent) {
-                $collection = Collection::filterCollection($parent->filter, collect($parent->collection), $object);
+            })->setRead(function (&$object) use ($parent) {
+                $collection = Collection::filterCollection(
+                    $parent->filter,
+                    collect($parent->collection),
+                    $object
+                );
 
                 $result = [];
 
                 foreach ($collection as $o) {
-                    $result = AttributeMapping::ensureAttributeMappingObject($o);
+                    $result = static::ensureAttributeMappingObject($o);
                 }
 
                 return $result;
             })->setSchema($schema);
-        }
     }
 
-    public static function filterCollection($scimFilter, $collection, $resourceObject)
-    {
-        if ($scimFilter == null) {
+    /**
+     * @param mixed $scimFilter
+     * @param LaravelCollection $collection
+     * @param Model $resourceObject
+     * @return LaravelCollection
+     * @throws SCIMException
+     */
+    public static function filterCollection(
+        $scimFilter,
+        LaravelCollection $collection,
+        Model $resourceObject
+    ): LaravelCollection {
+        if (null === $scimFilter) {
             return $collection;
         }
 
@@ -119,52 +156,50 @@ class Collection extends AttributeMapping
         $result = [];
 
         foreach ($collection->toArray() as $value) {
-            $result[] = AttributeMapping::ensureAttributeMappingObject($value)->read($resourceObject);
+            $result[] = static::ensureAttributeMappingObject($value)->read($resourceObject);
         }
 
         $collectionOriginal = $collection;
-
         $collection = collect($result);
 
         switch ($operator) {
-            case "eq":
-                /** @var $collection Coll */
+            case 'eq':
                 $result = $collection->where($attribute, '==', $compareValue);
                 break;
-            case "ne":
+            case 'ne':
                 $result = $collection->where($attribute, '<>', $compareValue);
                 break;
-            case "co":
-                throw (new SCIMException(sprintf('"co" is not supported for attribute "%s"', $this->getFullKey())))->setHttpCode(501);
-                break;
-            case "sw":
-                throw (new SCIMException(sprintf('"sw" is not supported for attribute "%s"', $this->getFullKey())))->setHttpCode(501);
-                break;
-            case "ew":
-                throw (new SCIMException(sprintf('"ew" is not supported for attribute "%s"', $this->getFullKey())))->setHttpCode(501);
-                break;
-            case "pr":
+            case 'pr':
                 $result = $collection->where($attribute, '!=', null);
                 break;
-            case "gt":
+            case 'gt':
                 $result = $collection->where($attribute, '>', $compareValue);
                 break;
-            case "ge":
+            case 'ge':
                 $result = $collection->where($attribute, '>=', $compareValue);
                 break;
-            case "lt":
+            case 'lt':
                 $result = $collection->where($attribute, '<', $compareValue);
                 break;
-            case "le":
+            case 'le':
                 $result = $collection->where($attribute, '<=', $compareValue);
                 break;
+            case 'co':
+            case 'sw':
+            case 'ew':
+                throw (new SCIMException("'{$operator}' is not supported for attribute '{$attribute}'"))
+                    ->setHttpCode(501);
+                break;
             default:
-                throw new \RuntimeException("Not supported operator '{$operator}'");
+                throw (new SCIMException("Not supported operator '{$operator}'"))
+                    ->setHttpCode(501);
                 break;
         }
 
+        $allKeys = (array)$result->keys()->all();
+
         foreach ($collectionOriginal->keys()->all() as $key) {
-            if (!in_array($key, (array)$result->keys()->all())) {
+            if (false === in_array($key, $allKeys)) {
                 unset($collectionOriginal[$key]);
             }
         }
@@ -175,56 +210,64 @@ class Collection extends AttributeMapping
     /**
      * Get an operator checker callback.
      *
-     * @param  string  $key
-     * @param  string  $operator
-     * @param  mixed  $value
-     * @return \Closure
+     * @param string $key
+     * @param string $operator
+     * @param mixed|null $value
+     * @return Closure
      */
-    protected function operatorForWhere($key, $operator, $value = null)
-    {
-        if (func_num_args() == 2) {
+    protected function operatorForWhere(
+        string $key,
+        string $operator,
+        $value = null
+    ): Closure {
+        if (2 === func_num_args()) {
             $value = $operator;
-
             $operator = '=';
         }
 
         return function ($item) use ($key, $operator, $value) {
             $retrieved = data_get($item, $key);
 
-            $strings = array_filter([$retrieved, $value], function ($value) {
-                return is_string($value) || (is_object($value) && method_exists($value, '__toString'));
+            $strings = array_filter([$retrieved, $value,], function ($value) {
+                return is_string($value)
+                    || (is_object($value) && method_exists($value, '__toString'));
             });
 
-            if (count($strings) < 2 && count(array_filter([$retrieved, $value], 'is_object')) == 1) {
-                return in_array($operator, ['!=', '<>', '!==']);
+            if (2 >= count($strings)
+            &&  1 == count(array_filter([$retrieved, $value,], 'is_object'))) {
+                return in_array($operator, ['!=', '<>', '!==',]);
             }
 
             switch ($operator) {
-                    default:
-                    case '=':
-                    case '==':
-                    return $retrieved == $value;
-                    case '!=':
-                    case '<>':
+                case '!=':
+                case '<>':
                     return $retrieved != $value;
-                    case '<':
+                case '<':
                     return $retrieved < $value;
-                    case '>':
+                case '>':
                     return $retrieved > $value;
-                    case '<=':
+                case '<=':
                     return $retrieved <= $value;
-                    case '>=':
+                case '>=':
                     return $retrieved >= $value;
-                    case '===':
+                case '===':
                     return $retrieved === $value;
-                    case '!==':
+                case '!==':
                     return $retrieved !== $value;
-                }
+                case '=':
+                case '==':
+                default:
+                    return $retrieved == $value;
+            }
         };
     }
 
-    public function applyWhereCondition(&$query, $operator, $value)
+    /**
+     * {@inheritdoc}
+     */
+    public function applyWhereCondition(&$query, string $operator, $value)
     {
-        throw (new SCIMException(sprintf('Filter is not supported for attribute "%s"', $this->getFullKey())))->setHttpCode(501);
+        throw (new SCIMException("Filter is not supported for attribute '{$this->getFullKey()}'"))
+            ->setHttpCode(501);
     }
 }

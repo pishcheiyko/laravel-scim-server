@@ -44,7 +44,7 @@ class AttributeMapping
         return (new AttributeMapping())->disableWrite()->ignoreRead()->setParent($parent);
     }
 
-    public static function arrayOfObjects($mapping, $parent = null) : AttributeMapping
+    public static function arrayOfObjects(array $mapping, $parent = null) : AttributeMapping
     {
         return (new Collection())->setStaticCollection($mapping)->setRead(
             function (&$object) use ($mapping, $parent) {
@@ -53,7 +53,7 @@ class AttributeMapping
                 foreach ($mapping as $key => $o) {
                     $element = static::ensureAttributeMappingObject($o)->setParent($parent)->read($object);
 
-                    if ($element != null) {
+                    if (null !== $element) {
                         $result[] = $element;
                     }
                 }
@@ -152,7 +152,10 @@ class AttributeMapping
         return $this;
     }
 
-    public function getEloquentAttributes()
+    /**
+     * @return array
+     */
+    public function getEloquentAttributes(): array
     {
         $result = $this->eloquentAttributes;
 
@@ -171,9 +174,8 @@ class AttributeMapping
     {
         $parent = $this;
 
-        $this->read = function (&$object) use ($parent) {
-            // throw new SCIMException('Read is not supported for ' . $parent->getFullKey());
-           return null; //"disabled!!";
+        $this->read = function (&$object) {
+            return null; // "disabled!!";
         };
 
         $this->readEnabled = false;
@@ -251,66 +253,66 @@ class AttributeMapping
     public function setReturned($returned)
     {
         $this->returned = $returned;
-         
-        return $this;
-    }
-    
-    public function setReplace($replace)
-    {
-        $this->replace = $replace;
-         
+
         return $this;
     }
 
-    public function setWriteAfter($write)
+    public function setReplace($replace)
     {
-        $this->writeAfter = $writeAfter;
-        
+        $this->replace = $replace;
+
         return $this;
     }
-    
+
+    public function setWriteAfter($writeAfter)
+    {
+        $this->writeAfter = $writeAfter;
+
+        return $this;
+    }
+
     public function setParent($parent)
     {
         $this->parent = $parent;
         return $this;
     }
-    
+
     public function setKey($key)
     {
         $this->key = $key;
         return $this;
     }
-    
+
     public function getKey()
     {
         return $this->key;
     }
-    
+
     public function getFullKey()
     {
         $parent = $this->parent;
-        
+
         $fullKey = [];
-        
+
         while ($parent != null) {
             array_unshift($fullKey, $parent->getKey());
             $parent = $parent->parent;
         }
-        
+
         $fullKey[]  = $this->getKey();
-        
+
         //ugly hack
         $fullKey = array_filter($fullKey, function ($value) {
             return !empty($value);
         });
-        
+
         return Helper::getFlattenKey($fullKey, [$this->getSchema() ?? $this->getDefaultSchema()]);
     }
-    
+
     public function setFilter($filter)
     {
         $this->filter = $filter;
-        
+
         return $this;
     }
 
@@ -362,11 +364,19 @@ class AttributeMapping
         return $this->setFilter($filter);
     }
 
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     */
     public function add($value, &$object)
     {
         return $this->add ? ($this->add)($value, $object) : $this->writeNotImplemented($object);
     }
 
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     */
     public function replace($value, &$object)
     {
         $current = $this->read($object);
@@ -375,6 +385,10 @@ class AttributeMapping
         return $this->replace ? ($this->replace)($value, $object) : $this->replaceNotImplemented($value, $object);
     }
 
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     */
     public function remove($value, &$object)
     {
         //TODO: implement remove for multi valued attributes
@@ -410,11 +424,11 @@ class AttributeMapping
         return $this->writeEnabled;
     }
 
-    public static function ensureAttributeMappingObject($attributeMapping, $parent = null) : AttributeMapping
+    public static function ensureAttributeMappingObject($attributeMapping, $parent = null) : ?AttributeMapping
     {
         $result = null;
 
-        if ($attributeMapping == null) {
+        if (null === $attributeMapping) {
             $result = static::noMapping($parent);
         } elseif (is_array($attributeMapping) && !empty($attributeMapping) && isset($attributeMapping[0])) {
             $result = static::arrayOfObjects($attributeMapping, $parent);
@@ -423,7 +437,8 @@ class AttributeMapping
         } elseif ($attributeMapping instanceof AttributeMapping) {
             $result = $attributeMapping->setParent($parent);
         } else {
-            throw (new SCIMException(sprintf('Found unknown attribute "%s" in "%s"', $attributeMapping, $this->getFullKey())))->setHttpCode(500);
+            throw (new SCIMException(sprintf('Found unknown attribute "%s"', $attributeMapping)))
+                ->setHttpCode(500);
         }
 
         return $result;
@@ -431,8 +446,11 @@ class AttributeMapping
 
     /**
      * Returns the AttributeMapping for a specific value. Uses for example for creating queries ... and sorting
-     * @param unknown $value
-     * @return $this
+     *
+     * @param mixed $key
+     * @param mixed|null $schema
+     * @return $this|null
+     * @throws SCIMException
      */
     public function getSubNode($key, $schema = null)
     {
@@ -464,7 +482,7 @@ class AttributeMapping
 
         return $this;
     }
-    
+
     public function getNode($attributePath)
     {
         if (empty($attributePath)) {
@@ -510,6 +528,8 @@ class AttributeMapping
         if ($path == null) {
             return $this;
         } else {
+            // TODO: This code is wrong!!!
+
             $getAttributePath = function () {
                 return $this->attributePath;
             };
@@ -569,7 +589,13 @@ class AttributeMapping
         }
     }
 
-    public function applyWhereCondition(&$query, $operator, $value)
+    /**
+     * @param mixed $query
+     * @param string $operator
+     * @param mixed $value
+     * @throws SCIMException
+     */
+    public function applyWhereCondition(&$query, string $operator, $value)
     {
         //only filter on OWN eloquent attributes
         if (empty($this->eloquentAttributes)) {

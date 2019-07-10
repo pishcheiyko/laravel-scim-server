@@ -2,7 +2,7 @@
 
 namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\Model;

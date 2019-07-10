@@ -131,7 +131,6 @@ class SCIMConfig
                         '$ref' => null,
                         'display' => null,
                         'type' => null,
-                        'type' => null,
                     ]],
                     'entitlements' => null,
                     'roles' => null,
