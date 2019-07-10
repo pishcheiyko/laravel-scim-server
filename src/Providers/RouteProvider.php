@@ -1,15 +1,15 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Providers;
+namespace UniqKey\Laravel\SCIMServer\Providers;
 
 use Illuminate\Support\Facades\Route;
-use ArieTimmerman\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\SchemaController;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ServiceProviderController;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceTypesController;
+use UniqKey\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\ResourceController;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\MeController;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\SchemaController;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\ServiceProviderController;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\ResourceTypesController;
 
 /**
  * Helper class for the URL shortener

@@ -1,6 +1,6 @@
 <?php
 
-$factory->define(ArieTimmerman\Laravel\SCIMServer\Tests\Model\User::class, function (Faker\Generator $faker) {
+$factory->define(UniqKey\Laravel\SCIMServer\Tests\Model\User::class, function (Faker\Generator $faker) {
     return [
         // 'username' => $faker->userName,
         'email' => $faker->email,

@@ -1,17 +1,17 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Http\Controllers;
+namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Error\FilterException;
-use ArieTimmerman\Laravel\SCIMServer\ResourceType;
-use ArieTimmerman\Laravel\SCIMServer\Helper;
-use ArieTimmerman\Laravel\SCIMServer\SCIM\ListResponse;
-use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyInterface;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
+use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class ResourceController extends BaseResourceController
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Exceptions;
+namespace UniqKey\Laravel\SCIMServer\Exceptions;
 
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Support\Renderable;
-use ArieTimmerman\Laravel\SCIMServer\SCIM\Error as ScimError;
+use UniqKey\Laravel\SCIMServer\SCIM\Error as ScimError;
 
 class SCIMException extends Exception
 {

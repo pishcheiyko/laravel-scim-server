@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Http\Controllers;
+namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
 use Illuminate\Support\Carbon;
 

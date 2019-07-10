@@ -1,8 +1,8 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Attributes;
+namespace UniqKey\Laravel\SCIMServer\Attributes;
 
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class Collection extends AttributeMapping
 {

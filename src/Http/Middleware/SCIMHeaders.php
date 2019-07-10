@@ -1,10 +1,10 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Middleware\Http;
+namespace UniqKey\Laravel\SCIMServer\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class SCIMHeaders
 {

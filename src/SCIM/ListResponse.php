@@ -1,11 +1,11 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\SCIM;
+namespace UniqKey\Laravel\SCIMServer\SCIM;
 
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
-use ArieTimmerman\Laravel\SCIMServer\Helper;
-use ArieTimmerman\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\ResourceType;
 
 class ListResponse implements Jsonable, Arrayable
 {

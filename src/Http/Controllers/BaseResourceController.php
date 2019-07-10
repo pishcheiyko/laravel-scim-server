@@ -1,21 +1,21 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Http\Controllers;
+namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
-use ArieTimmerman\Laravel\SCIMServer\ResourceType;
-use ArieTimmerman\Laravel\SCIMServer\Helper;
-use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyInterface;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use ArieTimmerman\Laravel\SCIMServer\Events\Get;
-use ArieTimmerman\Laravel\SCIMServer\Events\Create;
-use ArieTimmerman\Laravel\SCIMServer\Events\Replace;
-use ArieTimmerman\Laravel\SCIMServer\Events\Patch;
-use ArieTimmerman\Laravel\SCIMServer\Events\Delete;
+use UniqKey\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Events\Get;
+use UniqKey\Laravel\SCIMServer\Events\Create;
+use UniqKey\Laravel\SCIMServer\Events\Replace;
+use UniqKey\Laravel\SCIMServer\Events\Patch;
+use UniqKey\Laravel\SCIMServer\Events\Delete;
 
 /**
  * Base class
@@ -208,7 +208,7 @@ class BaseResourceController extends BaseController
         foreach ($allAttributeConfigs as $attributeConfig) {
             // Do not write write-only attributes (such as passwords)
             if ($attributeConfig->isReadSupported() && $attributeConfig->isWriteSupported()) {
-                // @ash TODO: why arietimmerman marks this line as commented ???
+                // @ash TODO: why ArieTimmerman marks this line as commented ???
                 //   $attributeConfig->remove($resourceObject);
             }
         }

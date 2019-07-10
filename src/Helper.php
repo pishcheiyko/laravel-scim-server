@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer;
+namespace UniqKey\Laravel\SCIMServer;
 
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -15,19 +15,20 @@ use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Ast\Path;
 use Tmilos\ScimFilterParser\Ast\AttributePath;
-use ArieTimmerman\Laravel\SCIMServer\Attributes\AttributeMapping;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class Helper
 {
-    public static function getAuthUserClass()
+    /**
+     * @return string
+     */
+    public static function getAuthUserClass(): string
     {
         return config('auth.providers.users.model');
     }
 
     /**
-     * @todo where is ArieTimmerman\Laravel\SCIMServer\Traits\SCIMResource ?
-     *
      * @param Arrayable $object
      * @param ResourceType|null $resourceType
      * @return array

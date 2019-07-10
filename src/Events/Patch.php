@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Events;
+namespace UniqKey\Laravel\SCIMServer\Events;
 
 class Patch extends BaseEvent
 {

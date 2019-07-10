@@ -1,8 +1,8 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer;
+namespace UniqKey\Laravel\SCIMServer;
 
-use ArieTimmerman\Laravel\SCIMServer\Attributes\AttributeMapping;
+use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
 
 class ResourceType
 {

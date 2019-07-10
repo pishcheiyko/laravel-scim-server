@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Contracts;
+namespace UniqKey\Laravel\SCIMServer\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Policies;
+namespace UniqKey\Laravel\SCIMServer\Policies;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
-use ArieTimmerman\Laravel\SCIMServer\ResourceType;
-use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyInterface;
+use UniqKey\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 
 class MePolicy implements PolicyInterface
 {

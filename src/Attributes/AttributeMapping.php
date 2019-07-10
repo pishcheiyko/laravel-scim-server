@@ -1,11 +1,11 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Attributes;
+namespace UniqKey\Laravel\SCIMServer\Attributes;
 
 use Illuminate\Support\Carbon;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use ArieTimmerman\Laravel\SCIMServer\SCIM\Schema;
-use ArieTimmerman\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
+use UniqKey\Laravel\SCIMServer\Helper;
 
 class AttributeMapping
 {
@@ -432,7 +432,7 @@ class AttributeMapping
     /**
      * Returns the AttributeMapping for a specific value. Uses for example for creating queries ... and sorting
      * @param unknown $value
-     * @return \ArieTimmerman\Laravel\SCIMServer\Attribute\AttributeMapping
+     * @return $this
      */
     public function getSubNode($key, $schema = null)
     {

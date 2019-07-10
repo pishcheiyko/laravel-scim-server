@@ -1,17 +1,17 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Providers;
+namespace UniqKey\Laravel\SCIMServer\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use ArieTimmerman\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\MeController;
-use ArieTimmerman\Laravel\SCIMServer\Http\Controllers\ResourceController;
-use ArieTimmerman\Laravel\SCIMServer\Policies\MePolicy;
-use ArieTimmerman\Laravel\SCIMServer\Policies\ResourcePolicy;
-use ArieTimmerman\Laravel\SCIMServer\Contracts\PolicyInterface;
+use UniqKey\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\MeController;
+use UniqKey\Laravel\SCIMServer\Http\Controllers\ResourceController;
+use UniqKey\Laravel\SCIMServer\Policies\MePolicy;
+use UniqKey\Laravel\SCIMServer\Policies\ResourcePolicy;
+use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 
 class ServiceProvider extends BaseServiceProvider
 {

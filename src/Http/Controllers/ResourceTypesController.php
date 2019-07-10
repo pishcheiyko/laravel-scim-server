@@ -1,13 +1,13 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Http\Controllers;
+namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
-use ArieTimmerman\Laravel\SCIMServer\SCIM\ListResponse;
-use ArieTimmerman\Laravel\SCIMServer\SCIM\ResourceType;
-use ArieTimmerman\Laravel\SCIMServer\SCIM\Schema;
+use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
+use UniqKey\Laravel\SCIMServer\SCIM\ResourceType;
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use Illuminate\Http\Request;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use ArieTimmerman\Laravel\SCIMServer\SCIMConfig;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\SCIMConfig;
 
 class ResourceTypesController extends BaseController
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer;
+namespace UniqKey\Laravel\SCIMServer;
 
-use ArieTimmerman\Laravel\SCIMServer\SCIM\Schema;
-use ArieTimmerman\Laravel\SCIMServer\Helper;
-use ArieTimmerman\Laravel\SCIMServer\Attributes\AttributeMapping;
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
+use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
 
 class SCIMConfig
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Http\Controllers;
+namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
 use Tmilos\ScimSchema\Builder\SchemaBuilderV2;
-use ArieTimmerman\Laravel\SCIMServer\SCIM\ListResponse;
-use ArieTimmerman\Laravel\SCIMServer\Exceptions\SCIMException;
-use ArieTimmerman\Laravel\SCIMServer\SCIMConfig;
+use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
+use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\SCIMConfig;
 
 class SchemaController extends BaseController
 {

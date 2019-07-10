@@ -1,10 +1,10 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Events;
+namespace UniqKey\Laravel\SCIMServer\Events;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Queue\SerializesModels;
-use ArieTimmerman\Laravel\SCIMServer\Contracts\EventInterface;
+use UniqKey\Laravel\SCIMServer\Contracts\EventInterface;
 
 /**
  * Base class
