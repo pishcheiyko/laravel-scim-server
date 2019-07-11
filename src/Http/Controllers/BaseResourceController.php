@@ -115,7 +115,7 @@ class BaseResourceController extends BaseController
         }
 
         $class = $resourceType->getClass();
-        
+
         /** @var Model */
         $resourceObject = new $class();
 

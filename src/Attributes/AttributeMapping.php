@@ -9,25 +9,44 @@ use UniqKey\Laravel\SCIMServer\Helper;
 
 class AttributeMapping
 {
-    public $read;
-    public $add;
-    public $replace;
-    public $remove;
-    public $writeAfter;
-    public $getSubNode;
-    public $id = null;
-    public $parent = null;
-    public $filter = null;
-    public $key = null;
+    /** @var string|null */
+    protected $id = null;
+    /** @var AttributeMapping|null */
+    protected $parent = null;
+    /** @var string|null */
+    protected $key = null;
+    /** @var callable */
+    protected $read;
+    /** @var callable */
+    protected $add;
+    /** @var callable */
+    protected $replace;
+    /** @var callable */
+    protected $remove;
+    /** @var callable */
+    protected $writeAfter;
+    /** @var callable */
+    protected $getSubNode;
+    /** @var bool */
     protected $readEnabled = true;
+    /** @var bool */
     protected $writeEnabled = true;
+    /** @var string|null */
     protected $sortAttribute = null;
-    public $relationship = null;
+    /** @var array|null */
     protected $mappingAssocArray = null;
+    /** @var array */
     public $eloquentAttributes = [];
+    /** @var string|null */
     public $eloquentReadAttribute = null;
+    /** @var mixed|null */
     protected $defaultSchema = null;
+    /** @var mixed|null */
     protected $schema = null;
+    /** @var mixed|null */
+    protected $filter = null;
+    /** @var mixed|null */
+    protected $relationship = null;
 
     /**
      * Can be always, never, default, request
@@ -39,19 +58,36 @@ class AttributeMapping
     public const RETURNED_DEFAULT = 'default';
     public const RETURNED_REQUEST = 'request';
 
-    public static function noMapping($parent = null) : AttributeMapping
+    /**
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping
+     */
+    public static function noMapping(AttributeMapping $parent = null): AttributeMapping
     {
-        return (new AttributeMapping())->disableWrite()->ignoreRead()->setParent($parent);
+        return (new AttributeMapping())
+            ->disableWrite()
+            ->ignoreRead()
+            ->setParent($parent);
     }
 
-    public static function arrayOfObjects(array $mapping, $parent = null) : AttributeMapping
-    {
-        return (new Collection())->setStaticCollection($mapping)->setRead(
-            function (&$object) use ($mapping, $parent) {
+    /**
+     * @param array $mapping
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping
+     */
+    public static function arrayOfObjects(
+        array $mapping,
+        AttributeMapping $parent = null
+    ): AttributeMapping {
+        return (new Collection())
+            ->setStaticCollection($mapping)
+            ->setRead(function (&$object) use ($mapping, $parent) {
                 $result = [];
 
                 foreach ($mapping as $key => $o) {
-                    $element = static::ensureAttributeMappingObject($o)->setParent($parent)->read($object);
+                    $element = static::ensureAttributeMappingObject($o)
+                        ->setParent($parent)
+                        ->read($object);
 
                     if (null !== $element) {
                         $result[] = $element;
@@ -59,94 +95,168 @@ class AttributeMapping
                 }
 
                 return empty($result) ? null : $result;
-            }
-        );
+            });
     }
 
-    public static function object($mapping, $parent = null) : AttributeMapping
-    {
-        return (new AttributeMapping())->setMappingAssocArray($mapping)->setRead(function (&$object) use ($mapping, $parent) {
-            $result = [];
+    /**
+     * @param array $mapping
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping
+     */
+    public static function object(
+        array $mapping,
+        AttributeMapping $parent = null
+    ): AttributeMapping {
+        return (new AttributeMapping())
+            ->setMappingAssocArray($mapping)
+            ->setRead(function (&$object) use ($mapping, $parent) {
+                $result = [];
 
-            foreach ($mapping as $key => $value) {
-                $result[$key] = static::ensureAttributeMappingObject($value)->setParent($parent)->read($object);
+                foreach ($mapping as $key => $value) {
+                    $result[$key] = static::ensureAttributeMappingObject($value)
+                        ->setParent($parent)
+                        ->read($object);
 
-                if (empty($result[$key]) && !is_bool($result[$key])) {
-                    unset($result[$key]);
+                    if (empty($result[$key])
+                    &&  false === is_bool($result[$key])) {
+                        unset($result[$key]);
+                    }
                 }
-            }
 
-            return empty($result) ? null : $result;
-        });
+                return empty($result) ? null : $result;
+            });
     }
 
-    public static function constant($text, $parent = null) : AttributeMapping
-    {
-        return (new AttributeMapping())->disableWrite()->setParent($parent)->setRead(function (&$object) use ($text) {
-            return $text;
-        });
+    /**
+     * @param mixed $constant
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping
+     */
+    public static function constant(
+        $constant,
+        AttributeMapping $parent = null
+    ): AttributeMapping {
+        return (new AttributeMapping())
+            ->disableWrite()
+            ->setParent($parent)
+            ->setRead(function (&$object) use ($constant) {
+                return $constant;
+            });
     }
 
-    public static function eloquent($eloquentAttribute, $parent = null) : AttributeMapping
-    {
-        return (new EloquentAttributeMapping())->setEloquentReadAttribute($eloquentAttribute)->setParent($parent)->setAdd(function ($value, &$object) use ($eloquentAttribute) {
-            $object->{$eloquentAttribute} = $value;
-        })->setReplace(function ($value, &$object) use ($eloquentAttribute) {
-            $object->{$eloquentAttribute} = $value;
-        })->setSortAttribute($eloquentAttribute)->setEloquentAttributes([$eloquentAttribute]);
+    /**
+     * @param string $eloquentAttribute
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping
+     */
+    public static function eloquent(
+        string $eloquentAttribute,
+        AttributeMapping $parent = null
+    ) : AttributeMapping {
+        return (new EloquentAttributeMapping())
+            ->setEloquentReadAttribute($eloquentAttribute)
+            ->setParent($parent)
+            ->setAdd(function ($value, &$object) use ($eloquentAttribute) {
+                $object->{$eloquentAttribute} = $value;
+            })
+            ->setReplace(function ($value, &$object) use ($eloquentAttribute) {
+                $object->{$eloquentAttribute} = $value;
+            })
+            ->setSortAttribute($eloquentAttribute)
+            ->setEloquentAttributes([$eloquentAttribute,]);
     }
 
-    public static function eloquentCollection($eloquentAttribute, $parent = null) : AttributeMapping
-    {
-        return (new AttributeMapping())->setParent($parent)->setRead(function (&$object) use ($eloquentAttribute) {
-            $result = $object->{$eloquentAttribute};
-            return static::eloquentAttributeToString($result);
-        })->setAdd(function ($value, &$object) use ($eloquentAttribute) {
-            if (!is_array($value)) {
-                $value = [$value];
-            }
-
-            $object->{$eloquentAttribute}()->attach(collect($value)->pluck('value'));
-        })->setReplace(function ($value, &$object) use ($eloquentAttribute) {
-            $object->{$eloquentAttribute}()->sync(collect($value)->pluck('value'));
-        })->setSortAttribute($eloquentAttribute)->setEloquentAttributes([$eloquentAttribute]);
+    /**
+     * @param string $eloquentAttribute
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping
+     */
+    public static function eloquentCollection(
+        string $eloquentAttribute,
+        AttributeMapping $parent = null
+    ): AttributeMapping {
+        return (new AttributeMapping())
+            ->setParent($parent)
+            ->setRead(function (&$object) use ($eloquentAttribute) {
+                $result = $object->{$eloquentAttribute};
+                return static::eloquentAttributeToString($result);
+            })
+            ->setAdd(function ($value, &$object) use ($eloquentAttribute) {
+                if (false === is_array($value)) {
+                    $value = [$value];
+                }
+                $object->{$eloquentAttribute}()
+                    ->attach(collect($value)->pluck('value'));
+            })
+            ->setReplace(function ($value, &$object) use ($eloquentAttribute) {
+                $object->{$eloquentAttribute}()
+                    ->sync(collect($value)->pluck('value'));
+            })
+            ->setSortAttribute($eloquentAttribute)
+            ->setEloquentAttributes([$eloquentAttribute,]);
     }
 
-    public function setMappingAssocArray($mapping) : AttributeMapping
+    /**
+     * @param array $mapping
+     * @return $this
+     */
+    public function setMappingAssocArray(array $mapping): AttributeMapping
     {
         $this->mappingAssocArray = $mapping;
         return $this;
     }
 
-    public function setSchema($schema) : AttributeMapping
+    /**
+     * @param mixed $schema
+     * @return $this
+     */
+    public function setSchema($schema): AttributeMapping
     {
         $this->schema = $schema;
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getSchema()
     {
         return $this->schema;
     }
 
-    public function setDefaultSchema($schema) : AttributeMapping
+    /**
+     * @param mixed $schema
+     * @return $this
+     */
+    public function setDefaultSchema($schema): AttributeMapping
     {
         $this->defaultSchema = $schema;
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getDefaultSchema()
     {
         return $this->defaultSchema;
     }
 
-    public function setEloquentReadAttribute($attribute)
+    /**
+     * @param string $attribute
+     * @return $this
+     */
+    public function setEloquentReadAttribute(string $attribute): AttributeMapping
     {
         $this->eloquentReadAttribute = $attribute;
         return $this;
     }
 
-    public function setEloquentAttributes(array $attributes)
+    /**
+     * @param array $attributes
+     * @return $this
+     */
+    public function setEloquentAttributes(array $attributes): AttributeMapping
     {
         $this->eloquentAttributes = $attributes;
         return $this;
@@ -161,7 +271,11 @@ class AttributeMapping
 
         if ($this->mappingAssocArray) {
             foreach ($this->mappingAssocArray as $key => $value) {
-                foreach (static::ensureAttributeMappingObject($value)->setParent($this)->getEloquentAttributes() as $attribute) {
+                $attributes = static::ensureAttributeMappingObject($value)
+                    ->setParent($this)
+                    ->getEloquentAttributes();
+
+                foreach ($attributes as $attribute) {
                     $result[] = $attribute;
                 }
             }
@@ -170,12 +284,13 @@ class AttributeMapping
         return $result;
     }
 
-    public function disableRead()
+    /**
+     * @return $this
+     */
+    public function disableRead(): AttributeMapping
     {
-        $parent = $this;
-
         $this->read = function (&$object) {
-            return null; // "disabled!!";
+            return null; // disabled
         };
 
         $this->readEnabled = false;
@@ -186,7 +301,7 @@ class AttributeMapping
     /**
      * @return $this
      */
-    public function ignoreRead()
+    public function ignoreRead(): AttributeMapping
     {
         $this->read = function (&$object) {
             return null;
@@ -198,10 +313,10 @@ class AttributeMapping
     /**
      * @return $this
      */
-    public function ignoreWrite()
+    public function ignoreWrite(): AttributeMapping
     {
         $ignore = function ($value, &$object) {
-            //ignore
+            // do nothing
         };
 
         $this->add = $ignore;
@@ -211,10 +326,15 @@ class AttributeMapping
         return $this;
     }
 
-    public function disableWrite()
+    /**
+     * @return $this
+     */
+    public function disableWrite(): AttributeMapping
     {
         $disable = function ($value, &$object) {
-            throw (new SCIMException(sprintf('Write to "%s" is not supported', $this->getFullKey())))->setHttpCode(500)->setScimType('mutability');
+            throw (new SCIMException(sprintf('Write to "%s" is not supported', $this->getFullKey())))
+                ->setHttpCode(500)
+                ->setScimType('mutability');
         };
 
         $this->add = $disable;
@@ -227,184 +347,293 @@ class AttributeMapping
     }
 
     /**
+     * @param string $returned
      * @return $this
      */
-    public function setRead($read) : AttributeMapping
-    {
-        $this->read = $read;
-
-        return $this;
-    }
-
-    public function setAdd($write)
-    {
-        $this->add = $write;
-
-        return $this;
-    }
-
-    public function setRemove($write)
-    {
-        $this->remove = $write;
-
-        return $this;
-    }
-
-    public function setReturned($returned)
+    public function setReturned(string $returned): AttributeMapping
     {
         $this->returned = $returned;
-
         return $this;
     }
 
-    public function setReplace($replace)
+    /**
+     * @param callable $read
+     * @return $this
+     */
+    public function setRead(callable $read): AttributeMapping
+    {
+        $this->read = $read;
+        return $this;
+    }
+
+    /**
+     * @param callable $write
+     * @return $this
+     */
+    public function setAdd(callable $write): AttributeMapping
+    {
+        $this->add = $write;
+        return $this;
+    }
+
+    /**
+     * @param callable $write
+     * @return $this
+     */
+    public function setRemove(callable $write): AttributeMapping
+    {
+        $this->remove = $write;
+        return $this;
+    }
+
+    /**
+     * @param callable $replace
+     * @return $this
+     */
+    public function setReplace(callable $replace): AttributeMapping
     {
         $this->replace = $replace;
-
         return $this;
     }
 
-    public function setWriteAfter($writeAfter)
+    /**
+     * @param callable $writeAfter
+     * @return $this
+     */
+    public function setWriteAfter(callable $writeAfter): AttributeMapping
     {
         $this->writeAfter = $writeAfter;
-
         return $this;
     }
 
-    public function setParent($parent)
+    /**
+     * @param AttributeMapping|null $parent
+     * @return $this
+     */
+    public function setParent(?AttributeMapping $parent): AttributeMapping
     {
         $this->parent = $parent;
         return $this;
     }
 
-    public function setKey($key)
-    {
-        $this->key = $key;
-        return $this;
-    }
-
-    public function getKey()
-    {
-        return $this->key;
-    }
-
-    public function getFullKey()
-    {
-        $parent = $this->parent;
-
-        $fullKey = [];
-
-        while ($parent != null) {
-            array_unshift($fullKey, $parent->getKey());
-            $parent = $parent->parent;
-        }
-
-        $fullKey[]  = $this->getKey();
-
-        //ugly hack
-        $fullKey = array_filter($fullKey, function ($value) {
-            return !empty($value);
-        });
-
-        return Helper::getFlattenKey($fullKey, [$this->getSchema() ?? $this->getDefaultSchema()]);
-    }
-
-    public function setFilter($filter)
+    /**
+     * @param mixed $parent
+     * @return $this
+     */
+    public function setFilter($filter): AttributeMapping
     {
         $this->filter = $filter;
-
         return $this;
     }
 
-    public function readNotImplemented($object)
-    {
-        throw new SCIMException(sprintf('Read is not implemented for "%s"', $this->getFullKey()));
-    }
-
-    public function writeNotImplemented($object)
-    {
-        throw new SCIMException(sprintf('Write is not implemented for "%s"', $this->getFullKey()));
-    }
-
-    public function writeAfterIgnore($value, &$object)
-    {
-    }
-
-    public function replaceNotImplemented($value, &$object)
-    {
-        throw new SCIMException(sprintf('Replace is not implemented for "%s"', $this->getFullKey()));
-    }
-
-    public function defaultRemove($value, &$object)
-    {
-    }
-
-    public function __construct()
-    {
-    }
-
-    public function setSortAttribute($attribute)
-    {
-        $this->sortAttribute = $attribute;
-
-        return $this;
-    }
-
-    public function getSortAttribute()
-    {
-        if (!$this->readEnabled) {
-            throw new SCIMException(sprintf('Can\'t sort on unreadable attribute "%s"', $this->getFullKey()));
-        }
-
-        return $this->sortAttribute;
-    }
-
-    public function withFilter($filter)
+    /**
+     * @param mixed $parent
+     * @return $this
+     */
+    public function withFilter($filter): AttributeMapping
     {
         return $this->setFilter($filter);
     }
 
     /**
+     * @param string $key
+     * @return $this
+     */
+    public function setKey(string $key): AttributeMapping
+    {
+        $this->key = $key;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getKey(): ?string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFullKey(): string
+    {
+        $parent = $this->parent;
+
+        $fullKey = [];
+
+        while (null !== $parent) {
+            array_unshift($fullKey, $parent->getKey());
+            $parent = $parent->parent;
+        }
+
+        $fullKey[] = $this->getKey();
+
+        // There is an ugly hack.
+        $fullKey = array_filter($fullKey, function ($value) {
+            return !empty($value);
+        });
+
+        return Helper::getFlattenKey(
+            $fullKey,
+            [$this->getSchema() ?? $this->getDefaultSchema(),]
+        );
+    }
+
+    /**
+     * @param mixed $object
+     * @throws SCIMException
+     */
+    public function readNotImplemented($object)
+    {
+        throw (new SCIMException(sprintf('Read is not implemented for "%s"', $this->getFullKey())))
+            ->setHttpCode(500);
+    }
+
+    /**
      * @param mixed $value
      * @param mixed $object
+     * @throws SCIMException
+     */
+    public function replaceNotImplemented($value, &$object)
+    {
+        throw (new SCIMException(sprintf('Replace is not implemented for "%s"', $this->getFullKey())))
+            ->setHttpCode(500);
+    }
+
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     * @throws SCIMException
+     */
+    public function writeNotImplemented($value, &$object)
+    {
+        throw (new SCIMException(sprintf('Write is not implemented for "%s"', $this->getFullKey())))
+            ->setHttpCode(500);
+    }
+
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     */
+    public function writeAfterIgnore($value, &$object)
+    {
+        // do nothing
+    }
+
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     */
+    public function defaultRemove($value, &$object)
+    {
+        // do nothing
+    }
+
+    /**
+     * @param string|null $attribute
+     * @return $this
+     */
+    public function setSortAttribute(?string $attribute): AttributeMapping
+    {
+        $this->sortAttribute = $attribute;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     * @throws SCIMException
+     */
+    public function getSortAttribute(): ?string
+    {
+        if (false === $this->readEnabled) {
+            throw (new SCIMException(sprintf('Can\'t sort on unreadable attribute "%s"', $this->getFullKey())))
+                ->setHttpCode(400);
+        }
+
+        return $this->sortAttribute;
+    }
+
+    /**
+     * @param mixed $object
+     * @return mixed
+     */
+    public function read(&$object)
+    {
+        if (null !== $this->read) {
+            return ($this->read)($object);
+        } else {
+            return $this->readNotImplemented($object);
+        }
+    }
+
+    /**
+     * @param mixed $value
+     * @param mixed $object
+     * @return mixed
      */
     public function add($value, &$object)
     {
-        return $this->add ? ($this->add)($value, $object) : $this->writeNotImplemented($object);
+        if (null !== $this->add) {
+            return ($this->add)($value, $object);
+        } else {
+            return $this->writeNotImplemented($value, $object);
+        }
     }
 
     /**
      * @param mixed $value
      * @param mixed $object
+     * @return mixed
+     */
+    public function writeAfter($value, &$object)
+    {
+        if (null !== $this->writeAfter) {
+            return ($this->writeAfter)($value, $object);
+        } else {
+            return $this->writeAfter($value, $object);
+        }
+    }
+
+    /**
+     * @todo See 'TODO' below
+     *
+     * @param mixed $value
+     * @param mixed $object
+     * @return mixed
      */
     public function replace($value, &$object)
     {
-        $current = $this->read($object);
-
         //TODO: Really implement replace ...???
-        return $this->replace ? ($this->replace)($value, $object) : $this->replaceNotImplemented($value, $object);
+        // $current = $this->read($object);
+
+        if (null !== $this->replace) {
+            return ($this->replace)($value, $object);
+        } else {
+            return $this->replaceNotImplemented($value, $object);
+        }
+    }
+
+    /**
+     * @todo implement remove for multi valued attributes
+     *
+     * @param mixed $value
+     * @param mixed $object
+     * @return mixed
+     */
+    public function remove($value, &$object)
+    {
+        if (null !== $this->remove) {
+            return ($this->remove)($value, $object);
+        } else {
+            return $this->defaultRemove($value, $object);
+        }
     }
 
     /**
      * @param mixed $value
-     * @param mixed $object
+     * @return mixed
      */
-    public function remove($value, &$object)
-    {
-        //TODO: implement remove for multi valued attributes
-        return $this->remove ? ($this->remove)($value, $object) : $this->defaultRemove($value, $object);
-    }
-
-    public function writeAfter($value, &$object)
-    {
-        return $this->writeAfter ? ($this->writeAfter)($value, $object) : $this->writeAfterIgnore($value, $object);
-    }
-
-    public function read(&$object)
-    {
-        return $this->read ? ($this->read)($object) : $this->readNotImplemented($object);
-    }
-
     public static function eloquentAttributeToString($value)
     {
         if ($value instanceof \Carbon\Carbon) {
@@ -414,26 +643,42 @@ class AttributeMapping
         return $value;
     }
 
-    public function isReadSupported()
+    /**
+     * @return bool
+     */
+    public function isReadSupported(): bool
     {
         return $this->readEnabled;
     }
 
-    public function isWriteSupported()
+    /**
+     * @return bool
+     */
+    public function isWriteSupported(): bool
     {
         return $this->writeEnabled;
     }
 
-    public static function ensureAttributeMappingObject($attributeMapping, $parent = null) : ?AttributeMapping
-    {
+    /**
+     * @param mixed $attributeMapping
+     * @param AttributeMapping|null $parent
+     * @return AttributeMapping|null
+     * @throws SCIMException
+     */
+    public static function ensureAttributeMappingObject(
+        $attributeMapping,
+        AttributeMapping $parent = null
+    ) : ?AttributeMapping {
         $result = null;
 
         if (null === $attributeMapping) {
             $result = static::noMapping($parent);
-        } elseif (is_array($attributeMapping) && !empty($attributeMapping) && isset($attributeMapping[0])) {
-            $result = static::arrayOfObjects($attributeMapping, $parent);
         } elseif (is_array($attributeMapping)) {
-            $result = static::object($attributeMapping, $parent);
+            if (isset($attributeMapping[0])) {
+                $result = static::arrayOfObjects($attributeMapping, $parent);
+            } else {
+                $result = static::object($attributeMapping, $parent);
+            }
         } elseif ($attributeMapping instanceof AttributeMapping) {
             $result = $attributeMapping->setParent($parent);
         } else {
@@ -445,60 +690,119 @@ class AttributeMapping
     }
 
     /**
-     * Returns the AttributeMapping for a specific value. Uses for example for creating queries ... and sorting
+     * @param mixed $relationship
+     * @return AttributeMapping
+     */
+    public function setRelationship($relationship): AttributeMapping
+    {
+        $this->relationship = $relationship;
+        return $this;
+    }
+
+    /**
+     * @param callable $closure
+     * @return AttributeMapping
+     */
+    public function setGetSubNode(callable $closure): AttributeMapping
+    {
+        $this->getSubNode = $closure;
+        return $this;
+    }
+
+    /**
+     * Returns the AttributeMapping for a specific value.
+     * Uses for example for creating queries ... and sorting
      *
-     * @param mixed $key
+     * @param string|null $key
      * @param mixed|null $schema
-     * @return $this|null
+     * @return AttributeMapping|null
      * @throws SCIMException
      */
-    public function getSubNode($key, $schema = null)
+    public function getSubNode(?string $key, $schema = null): ?AttributeMapping
     {
-        if ($this->getSubNode != null) {
+        if (null !== $this->getSubNode) {
             return ($this->getSubNode)($key, $schema);
         }
 
-        if ($key == null) {
+        if (null === $key) {
             return $this;
         }
 
-        if ($this->mappingAssocArray != null && array_key_exists($key, $this->mappingAssocArray)) {
-            return static::ensureAttributeMappingObject($this->mappingAssocArray[$key])->setParent($this)->setKey($key)->setSchema($schema);
+        if (null !== $this->mappingAssocArray
+        &&  true === array_key_exists($key, $this->mappingAssocArray)) {
+            return static::ensureAttributeMappingObject($this->mappingAssocArray[$key])
+                ->setParent($this)
+                ->setKey($key)
+                ->setSchema($schema);
         } else {
-            throw new SCIMException(sprintf('No mapping for "%s" in "%s"', $key, $this->getFullKey()));
+            throw (new SCIMException(sprintf('No mapping for "%s" in "%s"', $key, $this->getFullKey())))
+                ->setHttpCode(500);
         }
     }
 
-    public function setGetSubNode($closure)
+    /**
+     * @param mixed $path
+     * @return AttributeMapping|null
+     */
+    public function getSubNodeWithPath($path): ?AttributeMapping
     {
-        $this->getSubNode = $closure;
-
-        return $this;
-    }
-
-    public function setRelationship($relationship)
-    {
-        $this->relationship = $relationship;
-
-        return $this;
-    }
-
-    public function getNode($attributePath)
-    {
-        if (empty($attributePath)) {
+        if (null === $path) {
             return $this;
         }
 
-        //The first schema should be the default one
+        // TODO: This code is wrong!!!
+
+        $getAttributePath = function () {
+            return $this->attributePath;
+        };
+
+        $getValuePath = function () {
+            return $this->valuePath;
+        };
+
+        $getFilter = function () {
+            return $this->filter;
+        };
+
+        $first = @$getAttributePath->call($getValuePath->call($path));
+        $filter = @$getFilter->call($getValuePath->call($path));
+        $last = $getAttributePath->call($path);
+
+        return $this->getNode($first)
+            ->withFilter($filter)
+            ->getNode($last);
+    }
+
+    /**
+     * @param mixed $attributePath
+     * @return AttributeMapping|null
+     * @throws SCIMException
+     */
+    public function getNode($attributePath): ?AttributeMapping
+    {
+        if (true === empty($attributePath)) {
+            return $this;
+        }
+
+        /**
+         * The first schema should be the default one.
+         */
         $schema = $attributePath->schema ?? $this->getDefaultSchema()[0];
 
-        if (!empty($schema) && !empty($this->getSchema()) && $this->getSchema() != $schema) {
-            throw (new SCIMException(sprintf('Trying to get attribute for schema "%s". But schema is already "%s"', $attributePath->schema, $this->getSchema())))->setHttpCode(500)->setScimType('noTarget');
+        if (false === empty($schema)
+        &&  false === empty($this->getSchema())
+        &&  $this->getSchema() != $schema) {
+            throw (new SCIMException(sprintf('Trying to get attribute for schema "%s". But schema is already "%s"', $attributePath->schema, $this->getSchema())))
+                ->setHttpCode(500)
+                ->setScimType('noTarget');
         }
 
         $elements = [];
 
-        // The attribute mapping MUST include the schema. Therefore, add the schema to the first element.
+        /**
+         * The attribute mapping MUST include the schema.
+         * Therefore, add the schema to the first element.
+         */
         if (empty($attributePath->attributeNames) && !empty($schema)) {
             $elements[] = $schema;
         } elseif (empty($this->getSchema()) && !in_array($attributePath->attributeNames[0], Schema::ATTRIBUTES_CORE)) {
@@ -513,78 +817,55 @@ class AttributeMapping
         $node = $this;
 
         foreach ($elements as $element) {
-            try {
-                $node = $node->getSubNode($element, $schema);
-            } catch (\Exception $e) {
-                throw $e;
-            }
+            $node = $node->getSubNode($element, $schema);
         }
 
         return $node;
     }
 
-    public function getSubNodeWithPath($path)
-    {
-        if ($path == null) {
-            return $this;
-        } else {
-            // TODO: This code is wrong!!!
-
-            $getAttributePath = function () {
-                return $this->attributePath;
-            };
-
-            $getValuePath = function () {
-                return $this->valuePath;
-            };
-
-            $getFilter = function () {
-                return $this->filter;
-            };
-
-            $first = @$getAttributePath->call($getValuePath->call($path));
-            $filter = @$getFilter->call($getValuePath->call($path));
-            $last = $getAttributePath->call($path);
-
-            return $this->getNode($first)->withFilter($filter)->getNode($last);
-        }
-    }
-
-    public function applyWhereConditionDirect($attribute, &$query, $operator, $value)
+    /**
+     * @param mixed $attribute
+     * @param mixed $query
+     * @param string $operator
+     * @param mixed $value
+     * @throws SCIMException
+     */
+    public function applyWhereConditionDirect($attribute, &$query, string $operator, $value)
     {
         switch ($operator) {
-            case "eq":
+            case 'eq':
                 $query->where($attribute, $value);
                 break;
-            case "ne":
+            case 'ne':
                 $query->where($attribute, '<>', $value);
                 break;
-            case "co":
+            case 'co':
                 $query->where($attribute, 'like', '%' . addcslashes($value, '%_') . '%');
                 break;
-            case "sw":
+            case 'sw':
                 $query->where($attribute, 'like', addcslashes($value, '%_') . '%');
                 break;
-            case "ew":
+            case 'ew':
                 $query->where($attribute, 'like', '%' . addcslashes($value, '%_'));
                 break;
-            case "pr":
+            case 'pr':
                 $query->whereNotNull($attribute);
                 break;
-            case "gt":
+            case 'gt':
                 $query->where($attribute, '>', $value);
                 break;
-            case "ge":
+            case 'ge':
                 $query->where($attribute, '>=', $value);
                 break;
-            case "lt":
+            case 'lt':
                 $query->where($attribute, '<', $value);
                 break;
-            case "le":
+            case 'le':
                 $query->where($attribute, '<=', $value);
                 break;
             default:
-                throw new \RuntimeException("Not supported operator '{$operator}'");
+                throw (new SCIMException("Not supported operator '{$operator}'"))
+                    ->setHttpCode(500);
                 break;
         }
     }

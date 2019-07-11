@@ -31,7 +31,8 @@ class Collection extends AttributeMapping
     {
         if (null === $object->id) {  // only for creation requests
             foreach ($value as $key => $v) {
-                $this->getSubNode($key)->add($v, $object);
+                $this->getSubNode($key)
+                    ->add($v, $object);
             }
         } else {
             foreach ($value as $key => $v) {
@@ -90,7 +91,7 @@ class Collection extends AttributeMapping
     /**
      * {@inheritdoc}
      */
-    public function getSubNode($key, $schema = null)
+    public function getSubNode(?string $key, $schema = null): ?AttributeMapping
     {
         if (null === $key) {
             return $this;
@@ -156,7 +157,8 @@ class Collection extends AttributeMapping
         $result = [];
 
         foreach ($collection->toArray() as $value) {
-            $result[] = static::ensureAttributeMappingObject($value)->read($resourceObject);
+            $result[] = static::ensureAttributeMappingObject($value)
+                ->read($resourceObject);
         }
 
         $collectionOriginal = $collection;
