@@ -14,7 +14,7 @@ use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 use UniqKey\Laravel\SCIMServer\Events\Get;
 use UniqKey\Laravel\SCIMServer\Events\Create;
 use UniqKey\Laravel\SCIMServer\Events\Replace;
-use UniqKey\Laravel\SCIMServer\Events\Patch;
+use UniqKey\Laravel\SCIMServer\Events\Update;
 use UniqKey\Laravel\SCIMServer\Events\Delete;
 
 /**
@@ -50,10 +50,7 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        $flattened = Helper::flatten(Helper::objectToSCIMArray($resourceObject, $resourceType), $resourceType->getSchema());
-        $flattened = $this->validateScim($resourceType, $flattened, $resourceObject);
-
-        if (false === $this->policy->isAllowed($request, PolicyInterface::OPERATION_GET, $flattened, $resourceType, $resourceObject)) {
+        if (false === $this->policy->isGettingAllowed($resourceType, $resourceObject)) {
             throw (new SCIMException('This is not allowed'))
                 ->setHttpCode(403);
         }
@@ -77,10 +74,7 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        $flattened = Helper::flatten(Helper::objectToSCIMArray($resourceObject, $resourceType), $resourceType->getSchema());
-        $flattened = $this->validateScim($resourceType, $flattened, $resourceObject);
-
-        if (false === $this->policy->isAllowed($request, PolicyInterface::OPERATION_DELETE, $flattened, $resourceType)) {
+        if (false === $this->policy->isDeletingAllowed($resourceType, $resourceObject)) {
             throw (new SCIMException('This is not allowed'))
                 ->setHttpCode(403);
         }
@@ -115,7 +109,7 @@ class BaseResourceController extends BaseController
         $flattened = Helper::flatten($input, $input['schemas']);
         $flattened = $this->validateScim($resourceType, $flattened);
 
-        if (false === $this->policy->isAllowed($request, PolicyInterface::OPERATION_POST, $flattened, $resourceType)) {
+        if (false === $this->policy->isCreatingAllowed($resourceType, $flattened)) {
             throw (new SCIMException('This is not allowed'))
                 ->setHttpCode(403);
         }
@@ -124,9 +118,9 @@ class BaseResourceController extends BaseController
         
         /** @var Model */
         $resourceObject = new $class();
-        
+
         $allAttributeConfigs = [];
-        
+
         foreach ($flattened as $scimAttribute => $value) {
             $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $scimAttribute);
             $attributeConfig->add($value, $resourceObject);
@@ -139,7 +133,7 @@ class BaseResourceController extends BaseController
             throw (new SCIMException("Could not save new {$class} instance", 0, $e))
                 ->setHttpCode(500);
         }
-        
+
         foreach ($allAttributeConfigs as &$attributeConfig) {
             $attributeConfig->writeAfter($flattened[$attributeConfig->getFullKey()], $resourceObject);
         }
@@ -147,7 +141,7 @@ class BaseResourceController extends BaseController
         event(new Create($resourceObject, [
             'origin' => static::class,
         ]));
-        
+
         return Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
     }
 
@@ -181,14 +175,14 @@ class BaseResourceController extends BaseController
             }
         }
 
-        if (false === $this->policy->isAllowed($request, PolicyInterface::OPERATION_PUT, $updated, $resourceType, $resourceObject)) {
+        if (false === $this->policy->isReplacingAllowed($resourceType, $resourceObject, $updated)) {
             throw (new SCIMException('This is not allowed'))
                 ->setHttpCode(403);
         }
 
         // Keep an array of written values
         $uses = [];
-        
+
         // Write all values
         foreach ($flattened as $scimAttribute => $value) {
             $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $scimAttribute);
@@ -196,13 +190,13 @@ class BaseResourceController extends BaseController
             if ($attributeConfig->isWriteSupported()) {
                 $attributeConfig->replace($value, $resourceObject);
             }
-            
+
             $uses[] = $attributeConfig;
         }
-        
+
         // Find values that have not been written in order to empty these.
         $allAttributeConfigs = $resourceType->getAllAttributeConfigs();
-                
+
         foreach ($uses as $use) {
             foreach ($allAttributeConfigs as $key => $option) {
                 if ($use->getFullKey() == $option->getFullKey()) {
@@ -244,40 +238,40 @@ class BaseResourceController extends BaseController
         Model $resourceObject
     ): Response {
         $input = $request->input();
-        
+
         if ($input['schemas'] !== ["urn:ietf:params:scim:api:messages:2.0:PatchOp"]) {
             throw (new SCIMException(sprintf('Invalid schema "%s". MUST be "urn:ietf:params:scim:api:messages:2.0:PatchOp"', json_encode($input['schemas']))))
                 ->setHttpCode(404);
         }
-                
+
         if (isset($input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations'])) {
             $input['Operations'] = $input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations'];
             unset($input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations']);
         }
-        
+
         $oldObject = Helper::objectToSCIMArray($resourceObject, $resourceType);
-        
+
         foreach ($input['Operations'] as $operation) {
             switch (strtolower($operation['op'])) {
-                case "add":
+                case 'add':
                     if (isset($operation['path'])) {
                         $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
-                        
+
                         foreach ($operation['value'] as $value) {
                             $attributeConfig->add($value, $resourceObject);
                         }
                     } else {
                         foreach ($operation['value'] as $key => $value) {
                             $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $key);
-                            
+
                             foreach ($value as $v) {
                                 $attributeConfig->add($v, $resourceObject);
                             }
                         }
                     }
                     break;
-                
-                case "remove":
+
+                case 'remove':
                     if (isset($operation['path'])) {
                         $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
                         $attributeConfig->remove($operation['value'] ?? null, $resourceObject);
@@ -285,8 +279,8 @@ class BaseResourceController extends BaseController
                         throw new SCIMException('You MUST provide a "Path"');
                     }
                     break;
-                    
-                case "replace":
+
+                case 'replace':
                     if (isset($operation['path'])) {
                         $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
                         $attributeConfig->replace($operation['value'], $resourceObject);
@@ -297,31 +291,31 @@ class BaseResourceController extends BaseController
                         }
                     }
                     break;
-                    
+
                 default:
                     throw new SCIMException(sprintf('Operation "%s" is not supported', $operation['op']));
                     break;
             }
         }
 
-        $dirty = $resourceObject->getDirty();
-
         // TODO: prevent something from getten written before ...
+        // $dirty = $resourceObject->getDirty();
+
         $newObject = Helper::flatten(Helper::objectToSCIMArray($resourceObject, $resourceType), $resourceType->getSchema());
         $flattened = $this->validateScim($resourceType, $newObject, $resourceObject);
 
-        if (false === $this->policy->isAllowed($request, PolicyInterface::OPERATION_PATCH, $flattened, $resourceType, $resourceObject)) {
+        if (false === $this->policy->isUpdatingAllowed($resourceType, $resourceObject, $flattened)) {
             throw (new SCIMException('This is not allowed'))
                 ->setHttpCode(403);
         }
-        
+
         $resourceObject->save();
 
-        event(new Patch($resourceObject, [
+        event(new Update($resourceObject, [
             'origin' => static::class,
             'previous' => $oldObject,
         ]));
-        
+
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
 
@@ -386,7 +380,7 @@ class BaseResourceController extends BaseController
                 $valid[$key] = $validTemp[$key];
             }
         }
-        
+
         $result = [];
 
         foreach ($valid as $key => $value) {

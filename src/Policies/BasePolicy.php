@@ -1,63 +1,62 @@
 <?php
 
-namespace UniqKey\Laravel\SCIMServer\Contracts;
+namespace UniqKey\Laravel\SCIMServer\Policies;
 
 use Illuminate\Database\Eloquent\Model;
 use UniqKey\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 
-interface PolicyInterface
+class BasePolicy implements PolicyInterface
 {
     /**
-     * @param ResourceType $resourceType
-     * @param Model $resourceObject
-     * @return bool
+     * {@inheritdoc}
      */
     public function isGettingAllowed(
         ResourceType $resourceType,
         Model $resourceObject
-    ): bool;
+    ): bool {
+        return true;
+    }
 
     /**
-     * @param ResourceType $resourceType
-     * @param Model $resourceObject
-     * @return bool
+     * {@inheritdoc}
      */
     public function isDeletingAllowed(
         ResourceType $resourceType,
         Model $resourceObject
-    ): bool;
+    ): bool {
+        return true;
+    }
 
     /**
-     * @param ResourceType $resourceType
-     * @param array $attributes
-     * @return bool
+     * {@inheritdoc}
      */
     public function isCreatingAllowed(
         ResourceType $resourceType,
         array $attributes
-    ): bool;
+    ): bool {
+        return true;
+    }
 
     /**
-     * @param ResourceType $resourceType
-     * @param Model $resourceObject
-     * @param array $attributes
-     * @return bool
+     * {@inheritdoc}
      */
     public function isReplacingAllowed(
         ResourceType $resourceType,
         Model $resourceObject,
         array $attributes
-    ): bool;
+    ): bool {
+        return true;
+    }
 
     /**
-     * @param ResourceType $resourceType
-     * @param Model $resourceObject
-     * @param array $attributes
-     * @return bool
+     * {@inheritdoc}
      */
     public function isUpdatingAllowed(
         ResourceType $resourceType,
         Model $resourceObject,
         array $attributes
-    ): bool;
+    ): bool {
+        return true;
+    }
 }
