@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Tests\Unit;
+namespace UniqKey\Laravel\SCIMServer\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 

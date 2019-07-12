@@ -1,6 +1,6 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Tests\Feature;
+namespace UniqKey\Laravel\SCIMServer\Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
 
@@ -35,9 +35,9 @@ class BasicTest extends TestCase {
         
         $this->withFactories(realpath(dirname(__DIR__).'/database/factories'));
         
-        \ArieTimmerman\Laravel\SCIMServer\RouteProvider::routes();;
+        \UniqKey\Laravel\SCIMServer\Providers\RouteProvider::routes();;
         
-        factory(\ArieTimmerman\Laravel\SCIMServer\Tests\Model\User::class, 100)->create();
+        factory(\UniqKey\Laravel\SCIMServer\Tests\Model\User::class, 100)->create();
         
     }
 
@@ -48,7 +48,7 @@ class BasicTest extends TestCase {
                 
         // Setup default database to use sqlite :memory:
         
-        $app['config']->set('scimserver.Users.class', \ArieTimmerman\Laravel\SCIMServer\Tests\Model\User::class);
+        $app['config']->set('scimserver.Users.class', \UniqKey\Laravel\SCIMServer\Tests\Model\User::class);
         
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [

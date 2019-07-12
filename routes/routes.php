@@ -1,4 +1,3 @@
 <?php
 
-
-ArieTimmerman\Laravel\SCIMServer\RouteProvider::routes();
+UniqKey\Laravel\SCIMServer\Providers\RouteProvider::routes();

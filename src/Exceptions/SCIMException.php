@@ -1,51 +1,75 @@
 <?php
 
-namespace ArieTimmerman\Laravel\SCIMServer\Exceptions;
+namespace UniqKey\Laravel\SCIMServer\Exceptions;
 
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Support\Renderable;
+use UniqKey\Laravel\SCIMServer\SCIM\Error as ScimError;
 
 class SCIMException extends Exception
 {
-    protected $scimType = "invalidValue";
+    /** @var string */
+    protected $scimType = 'invalidValue';
+    /** @var int */
     protected $httpCode = 404;
-
+    /** @var array */
     protected $errors = [];
-    
-    public function __construct($message)
-    {
-        parent::__construct($message);
-    }
-    
-    public function setScimType($scimType) : SCIMException
+
+    /**
+     * @param string $scimType
+     * @return $this
+     */
+    public function setScimType(string $scimType)
     {
         $this->scimType = $scimType;
-        
         return $this;
     }
-    
-    public function setCode($code) : SCIMException
+
+    /**
+     * @param int $code
+     * @return $this
+     */
+    public function setHttpCode(int $code)
     {
         $this->httpCode = $code;
-        
         return $this;
     }
 
-    public function setErrors($errors)
+    /**
+     * @param array $errors
+     * @return $this
+     */
+    public function setErrors(array $errors)
     {
         $this->errors = $errors;
-
         return $this;
     }
-    
+
+    /**
+     * Report the exception.
+     */
     public function report()
     {
-        Log::debug(sprintf("Validation failed. Errors: %s\n\nMessage: %s\n\nBody: %s", json_encode($this->errors, JSON_PRETTY_PRINT), $this->getMessage(), request()->getContent()));
+        Log::debug(sprintf(
+            'Validation failed. Errors: %s\n\nMessage: %s\n\nBody: %s',
+            json_encode($this->errors, JSON_PRETTY_PRINT),
+            $this->getMessage(),
+            request()->getContent()
+        ));
     }
 
-    
+    /**
+     * Render the exception into an HTTP response.
+     *
+     * @param  \Illuminate\Http\Request
+     * @return \Illuminate\Http\Response
+     */
     public function render($request)
     {
-        return response((new \ArieTimmerman\Laravel\SCIMServer\SCIM\Error($this->getMessage(), $this->httpCode, $this->scimType))->setErrors($this->errors), $this->httpCode);
+        $scimError = new ScimError($this->getMessage(), $this->httpCode, $this->scimType);
+        $scimError->setErrors($this->errors);
+
+        return response($scimError, $this->httpCode);
     }
 }

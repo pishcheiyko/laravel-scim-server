@@ -1,9 +1,13 @@
 {
     "name": "uniqkey/laravel-scim-server",
     "type": "library",
-    "description": "Laravel Package for creating a SCIM server",
+    "description": "Laravel Package for creating a SCIM server. The package forked from arietimmerman/laravel-scim-server",
     "license": "MIT",
     "authors": [
+        {
+            "name": "UniqKey",
+            "email": "support@uniqkey.eu"
+        },
         {
             "name": "Arie Timmerman",
             "email": "arietimmerman@gmail.com"
@@ -21,24 +25,14 @@
         "localheinz/composer-normalize": "^1.0",
         "nunomaduro/collision": "^2.1"
     },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "ArieTimmerman\\Laravel\\SCIMServer\\ServiceProvider"
-            ],
-            "aliases": {
-                "SCIMServerHelper": "ArieTimmerman\\Laravel\\SCIMServer\\Helper"
-            }
-        }
-    },
     "autoload": {
         "psr-4": {
-            "ArieTimmerman\\Laravel\\SCIMServer\\": "src/"
+            "UniqKey\\Laravel\\SCIMServer\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ArieTimmerman\\Laravel\\SCIMServer\\Tests\\": "tests"
+            "UniqKey\\Laravel\\SCIMServer\\Tests\\": "tests"
         }
     },
     "scripts": {
