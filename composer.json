@@ -25,6 +25,16 @@
         "localheinz/composer-normalize": "^1.0",
         "nunomaduro/collision": "^2.1"
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "UniqKey\\Laravel\\SCIMServer\\Providers\\ServiceProvider"
+            ],
+            "aliases": {
+                "SCIMServerHelper": "UniqKey\\Laravel\\SCIMServer\\Helper"
+            }
+        }
+    },
     "autoload": {
         "psr-4": {
             "UniqKey\\Laravel\\SCIMServer\\": "src/"

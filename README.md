@@ -4,7 +4,5 @@
 Add SCIM 2.0 Server capabilities with ease. Usually, no configuration is needed in order to benefit from the basic functionalities.
 
 ~~~
-composer require UnkqKey/laravel-scim-server
+composer require uniqkey/laravel-scim-server
 ~~~
-
-
