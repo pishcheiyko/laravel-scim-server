@@ -7,24 +7,22 @@ use UniqKey\Laravel\SCIMServer\ResourceType;
 use UniqKey\Laravel\SCIMServer\Helper;
 use UniqKey\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
-use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as BaseServiceProvider;
 
 class RouteServiceProvider extends BaseServiceProvider
 {
     /**
-     * Bootstrap any package services.
-     *
-     * @param Router $router
+     * {@inheritdoc}
      */
-    public function boot(Router $router)
+    public function boot()
     {
         parent::boot();
 
         // Match everything, except the Me routes
-        $router->pattern('resourceType', '^((?!Me).)*$');
+        Route::pattern('resourceType', '^((?!Me).)*$');
 
-        $router->bind('resourceType', function ($name, $route) {
+        Route::bind('resourceType', function ($name, $route) {
             $config = resolve(SCIMConfig::class)->getConfigForResource($name);
 
             if (null === $config) {
@@ -35,7 +33,7 @@ class RouteServiceProvider extends BaseServiceProvider
             return new ResourceType($name, $config);
         });
 
-        $router->bind('resourceObject', function ($id, $route) {
+        Route::bind('resourceObject', function ($id, $route) {
             $resourceType = $route->parameter('resourceType');
 
             if (!$resourceType) {
@@ -67,7 +65,7 @@ class RouteServiceProvider extends BaseServiceProvider
             return $resourceObject;
         });
 
-        $router->middleware('SCIMHeaders', SCIMHeaders::class);
+        Route::middleware('SCIMHeaders', SCIMHeaders::class);
     }
 
     /**
