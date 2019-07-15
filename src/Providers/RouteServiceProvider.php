@@ -55,8 +55,8 @@ class RouteServiceProvider extends BaseServiceProvider
                 $currentVersion = Helper::getResourceObjectVersion($resourceObject);
 
                 // if as version is '*' it is always ok
-                if (!in_array($currentVersion, $versionsAllowed)
-                &&  !in_array('*', $versionsAllowed)) {
+                if (false === in_array($currentVersion, $versionsAllowed)
+                &&  false === in_array('*', $versionsAllowed)) {
                     throw (new SCIMException('Failed to update. Resource changed on the server.'))
                         ->setHttpCode(412);
                 }
