@@ -13,7 +13,7 @@ PHP_CONTAINER="${PROJECT_NAME}_php_1"
 
 CURRENT_DIR="${PWD}"
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CODE_DIRS="${WORK_DIR}/src ${WORK_DIR}/routes"
+CODE_DIRS="${WORK_DIR}/src"
 
 NO_COLOR='\033[0m'
 ERROR_COLOR='\033[1;93;41m'

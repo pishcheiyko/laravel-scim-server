@@ -3,5 +3,4 @@
 parameters:
     paths:
         - src
-        - routes
     level: max

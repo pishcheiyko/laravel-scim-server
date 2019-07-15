@@ -2,10 +2,10 @@
 
 namespace UniqKey\Laravel\SCIMServer\Providers;
 
+use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use UniqKey\Laravel\SCIMServer\SCIMConfig;
 use UniqKey\Laravel\SCIMServer\ResourceType;
 use UniqKey\Laravel\SCIMServer\Helper;
-use UniqKey\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as BaseServiceProvider;
@@ -57,15 +57,13 @@ class RouteServiceProvider extends BaseServiceProvider
                 // if as version is '*' it is always ok
                 if (!in_array($currentVersion, $versionsAllowed)
                 &&  !in_array('*', $versionsAllowed)) {
-                    throw (new SCIMException('Failed to update.  Resource changed on the server.'))
+                    throw (new SCIMException('Failed to update. Resource changed on the server.'))
                         ->setHttpCode(412);
                 }
             }
 
             return $resourceObject;
         });
-
-        Route::middleware('SCIMHeaders', SCIMHeaders::class);
     }
 
     /**
@@ -73,6 +71,30 @@ class RouteServiceProvider extends BaseServiceProvider
      */
     public function map()
     {
-        RouteProvider::routes();
+        $options = resolve(SCIMRoutes::class)->getOptions();
+
+        Route::prefix($options['prefix'])
+            ->middleware($options['middleware'])
+            ->group(function () {
+                $options = resolve(SCIMRoutes::class)->getOptions();
+
+                Route::prefix('v2')
+                    ->middleware($options['v2']['middleware'])
+                    ->group(function () {
+                        resolve(SCIMRoutes::class)->allRoutes();
+                    });
+
+                Route::prefix('v1')
+                    ->group(function () {
+                        Route::fallback(function () {
+                            $options = resolve(SCIMRoutes::class)->getOptions();
+                            $url = url("{$options['prefix']}/v2");
+
+                            throw (new SCIMException("Only SCIM v2 is supported. Accessible under {$url}"))
+                                ->setHttpCode(501)
+                                ->setScimType('invalidVers');
+                        });
+                    });
+            });
     }
 }

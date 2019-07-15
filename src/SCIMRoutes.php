@@ -1,48 +1,45 @@
 <?php
 
-namespace UniqKey\Laravel\SCIMServer\Providers;
+namespace UniqKey\Laravel\SCIMServer;
 
 use Illuminate\Support\Facades\Route;
-use UniqKey\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
+use UniqKey\Laravel\SCIMServer\Http\Middleware\SCIMHeaders;
 use UniqKey\Laravel\SCIMServer\Http\Controllers\ResourceController;
 use UniqKey\Laravel\SCIMServer\Http\Controllers\MeController;
 use UniqKey\Laravel\SCIMServer\Http\Controllers\SchemaController;
 use UniqKey\Laravel\SCIMServer\Http\Controllers\ServiceProviderController;
 use UniqKey\Laravel\SCIMServer\Http\Controllers\ResourceTypesController;
 
-/**
- * Helper class for the URL shortener
- */
-class RouteProvider
+class SCIMRoutes
 {
     /**
-     * @param array $options
+     * @return array
      */
-    public static function routes(array $options = [])
+    public function getOptions(): array
     {
-        Route::prefix('scim')->group(function () use ($options) {
-            Route::prefix('v1')
-                ->group(function () {
-                    Route::fallback(function () {
-                        $url = url('scim/v2');
-                        throw (new SCIMException("Only SCIM v2 is supported. Accessible under {$url}"))
-                            ->setHttpCode(501)
-                            ->setScimType('invalidVers');
-                    });
-                });
-
-            Route::prefix('v2')->middleware([SCIMHeaders::class])
-                ->group(function () use ($options) {
-                    static::allRoutes($options);
-                });
-        });
+        return [
+            'prefix' => 'scim',
+            'middleware' => [SubstituteBindings::class,],
+            'v2' => [
+                'middleware' => [SCIMHeaders::class,],
+            ],
+        ];
     }
 
-    /**
-     * @param array $options
-     */
-    public static function publicRoutes(array $options = [])
+    public function allRoutes()
+    {
+        $this->resourceRoutes();
+        $this->meRoutes();
+        $this->publicRoutes();
+
+        Route::post('/Bulk', ResourceController::class . '@notImplemented');
+        Route::post('.search', ResourceController::class . '@notImplemented');
+        Route::fallback(ResourceController::class . '@notImplemented');
+    }
+
+    protected function publicRoutes()
     {
         Route::get('/ServiceProviderConfig', ServiceProviderController::class . '@index')
             ->name('scim.serviceproviderconfig');
@@ -57,10 +54,8 @@ class RouteProvider
 
     /**
      * Use a policy instance to control an access to this ones..
-     *
-     * @param array $options
      */
-    public static function meRoutes(array $options = [])
+    protected function meRoutes()
     {
         Route::get('/Me', MeController::class . '@show')->name('scim.me.get');
         Route::post('/Me', MeController::class . '@create')->name('scim.me.post');
@@ -72,10 +67,8 @@ class RouteProvider
 
     /**
      * Use a policy instance to control an access to this ones..
-     *
-     * @param array $options
      */
-    public static function resourceRoutes(array $options = [])
+    protected function resourceRoutes()
     {
         Route::get('/{resourceType}/{resourceObject}', ResourceController::class . '@show')
             ->name('scim.resource');
@@ -87,19 +80,5 @@ class RouteProvider
         Route::put('/{resourceType}/{resourceObject}', ResourceController::class . '@replace');
         Route::patch('/{resourceType}/{resourceObject}', ResourceController::class . '@update');
         Route::delete('/{resourceType}/{resourceObject}', ResourceController::class . '@delete');
-    }
-
-    /**
-     * @param array $options
-     */
-    protected static function allRoutes(array $options = [])
-    {
-        static::resourceRoutes($options);
-        // static::meRoutes($options);
-        // static::publicRoutes($options);
-
-        Route::post('/Bulk', ResourceController::class . '@notImplemented');
-        Route::post('.search', ResourceController::class . '@notImplemented');
-        Route::fallback(ResourceController::class . '@notImplemented');
     }
 }
