@@ -30,15 +30,15 @@ class ServiceProvider extends BaseServiceProvider
     protected function registerPolicies()
     {
         $this->app->when(MeController::class)
-          ->needs(PolicyInterface::class)
-          ->give(function () {
-              return new MePolicy();
-          });
+            ->needs(PolicyInterface::class)
+            ->give(function () {
+                return resolve(MePolicy::class);
+            });
 
         $this->app->when(ResourceController::class)
-          ->needs(PolicyInterface::class)
-          ->give(function () {
-              return new ResourcePolicy();
-          });
+            ->needs(PolicyInterface::class)
+            ->give(function () {
+                return resolve(ResourcePolicy::class);
+            });
     }
 }
