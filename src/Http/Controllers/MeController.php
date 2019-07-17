@@ -5,7 +5,6 @@ namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use UniqKey\Laravel\SCIMServer\ResourceType;
-use UniqKey\Laravel\SCIMServer\Helper;
 use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
