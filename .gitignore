@@ -6,3 +6,4 @@
 .env
 .php_cs.cache
 phpstan.neon
+composer.lock
