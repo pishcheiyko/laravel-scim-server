@@ -50,14 +50,9 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        if (false === $this->policy->isGettingAllowed($resourceType, $resourceObject)) {
-            throw (new SCIMException('This is not allowed'))
-                ->setHttpCode(403);
-        }
+        $this->failIfGettingDisallowed($resourceType, $resourceObject);
 
-        event(new Get($resourceObject, [
-            'origin' => static::class,
-        ]));
+        $this->fireGetEvent($resourceObject);
 
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
@@ -67,23 +62,17 @@ class BaseResourceController extends BaseController
      * @param ResourceType $resourceType
      * @param Model $resourceObject
      * @return Response
-     * @throws SCIMException
      */
     protected function deleteModel(
         Request $request,
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        if (false === $this->policy->isDeletingAllowed($resourceType, $resourceObject)) {
-            throw (new SCIMException('This is not allowed'))
-                ->setHttpCode(403);
-        }
+        $this->failIfDeletingDisallowed($resourceType, $resourceObject);
 
         $resourceObject->delete();
 
-        event(new Delete($resourceObject, [
-            'origin' => static::class,
-        ]));
+        $this->fireDeleteEvent($resourceObject);
 
         return response(null, 204);
     }
@@ -109,10 +98,7 @@ class BaseResourceController extends BaseController
         $flattened = Helper::flatten($input, $input['schemas']);
         $flattened = $this->validateScim($resourceType, $flattened);
 
-        if (false === $this->policy->isCreatingAllowed($resourceType, $flattened)) {
-            throw (new SCIMException('This is not allowed'))
-                ->setHttpCode(403);
-        }
+        $this->failIfCreatingDisallowed($resourceType, $flattened);
 
         $class = $resourceType->getClass();
 
@@ -138,9 +124,7 @@ class BaseResourceController extends BaseController
             $attributeConfig->writeAfter($flattened[$attributeConfig->getFullKey()], $resourceObject);
         }
 
-        event(new Create($resourceObject, [
-            'origin' => static::class,
-        ]));
+        $this->fireCreateEvent($resourceObject);
 
         return Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
     }
@@ -175,10 +159,7 @@ class BaseResourceController extends BaseController
             }
         }
 
-        if (false === $this->policy->isReplacingAllowed($resourceType, $resourceObject, $updated)) {
-            throw (new SCIMException('This is not allowed'))
-                ->setHttpCode(403);
-        }
+        $this->failIfReplacingDisallowed($resourceType, $resourceObject, $updated);
 
         // Keep an array of written values
         $uses = [];
@@ -215,10 +196,7 @@ class BaseResourceController extends BaseController
 
         $resourceObject->save();
 
-        event(new Replace($resourceObject, [
-            'origin' => static::class,
-            'previous' => $originalRaw,
-        ]));
+        $this->fireReplaceEvent($resourceObject, $originalRaw);
 
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
@@ -304,17 +282,11 @@ class BaseResourceController extends BaseController
         $newObject = Helper::flatten(Helper::objectToSCIMArray($resourceObject, $resourceType), $resourceType->getSchema());
         $flattened = $this->validateScim($resourceType, $newObject, $resourceObject);
 
-        if (false === $this->policy->isUpdatingAllowed($resourceType, $resourceObject, $flattened)) {
-            throw (new SCIMException('This is not allowed'))
-                ->setHttpCode(403);
-        }
+        $this->failIfUpdatingDisallowed($resourceType, $resourceObject, $flattened);
 
         $resourceObject->save();
 
-        event(new Update($resourceObject, [
-            'origin' => static::class,
-            'previous' => $oldObject,
-        ]));
+        $this->fireUpdateEvent($resourceObject, $oldObject);
 
         return Helper::objectToSCIMResponse($resourceObject, $resourceType);
     }
@@ -415,5 +387,149 @@ class BaseResourceController extends BaseController
         }
 
         return $return;
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @param array $extra
+     */
+    protected function fireGetEvent(Model $resourceObject, array $extra = [])
+    {
+        event(new Get($resourceObject, array_merge($extra, [
+            'origin' => static::class,
+        ])));
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @param array $extra
+     */
+    protected function fireDeleteEvent(Model $resourceObject, array $extra = [])
+    {
+        event(new Delete($resourceObject, array_merge($extra, [
+            'origin' => static::class,
+        ])));
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @param array $extra
+     */
+    protected function fireCreateEvent(Model $resourceObject, array $extra = [])
+    {
+        event(new Create($resourceObject, array_merge($extra, [
+            'origin' => static::class,
+        ])));
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @param array $previous
+     * @param array $extra
+     */
+    protected function fireReplaceEvent(
+        Model $resourceObject,
+        array $previous,
+        array $extra = []
+    ) {
+        event(new Replace($resourceObject, array_merge($extra, [
+            'origin' => static::class,
+            'previous' => $previous,
+        ])));
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @param array $previous
+     * @param array $extra
+     */
+    protected function fireUpdateEvent(
+        Model $resourceObject,
+        array $previous,
+        array $extra = []
+    ) {
+        event(new Update($resourceObject, array_merge($extra, [
+            'origin' => static::class,
+            'previous' => $previous,
+        ])));
+    }
+
+    /**
+     * @param ResourceType $resourceType
+     * @param Model $resourceObject
+     * @throws SCIMException
+     */
+    protected function failIfGettingDisallowed(
+        ResourceType $resourceType,
+        Model $resourceObject
+    ) {
+        if (false === $this->policy->isGettingAllowed($resourceType, $resourceObject)) {
+            throw (new SCIMException('This is not allowed'))
+                ->setHttpCode(403);
+        }
+    }
+
+    /**
+     * @param ResourceType $resourceType
+     * @param Model $resourceObject
+     * @throws SCIMException
+     */
+    protected function failIfDeletingDisallowed(
+        ResourceType $resourceType,
+        Model $resourceObject
+    ) {
+        if (false === $this->policy->isDeletingAllowed($resourceType, $resourceObject)) {
+            throw (new SCIMException('This is not allowed'))
+                ->setHttpCode(403);
+        }
+    }
+
+    /**
+     * @param ResourceType $resourceType
+     * @param array $flattened
+     * @throws SCIMException
+     */
+    protected function failIfCreatingDisallowed(
+        ResourceType $resourceType,
+        array $flattened
+    ) {
+        if (false === $this->policy->isCreatingAllowed($resourceType, $flattened)) {
+            throw (new SCIMException('This is not allowed'))
+                ->setHttpCode(403);
+        }
+    }
+
+    /**
+     * @param ResourceType $resourceType
+     * @param Model $resourceObject
+     * @param array $flattened
+     * @throws SCIMException
+     */
+    protected function failIfReplacingDisallowed(
+        ResourceType $resourceType,
+        Model $resourceObject,
+        array $flattened
+    ) {
+        if (false === $this->policy->isReplacingAllowed($resourceType, $resourceObject, $flattened)) {
+            throw (new SCIMException('This is not allowed'))
+                ->setHttpCode(403);
+        }
+    }
+
+    /**
+     * @param ResourceType $resourceType
+     * @param Model $resourceObject
+     * @param array $flattened
+     * @throws SCIMException
+     */
+    protected function failIfUpdatingDisallowed(
+        ResourceType $resourceType,
+        Model $resourceObject,
+        array $flattened
+    ) {
+        if (false === $this->policy->isUpdatingAllowed($resourceType, $resourceObject, $flattened)) {
+            throw (new SCIMException('This is not allowed'))
+                ->setHttpCode(403);
+        }
     }
 }
