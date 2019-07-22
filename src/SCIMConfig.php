@@ -141,8 +141,6 @@ class SCIMConfig
     }
 
     /**
-     * @todo @ash: Add Groups here..
-     *
      * @return array
      */
     public function getConfig(): array

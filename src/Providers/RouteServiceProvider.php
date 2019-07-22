@@ -4,7 +4,6 @@ namespace UniqKey\Laravel\SCIMServer\Providers;
 
 use UniqKey\Laravel\SCIMServer\SCIMRouteBinding;
 use UniqKey\Laravel\SCIMServer\SCIMRoutes;
-use UniqKey\Laravel\SCIMServer\SCIMConfig;
 use UniqKey\Laravel\SCIMServer\ResourceType;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 use Illuminate\Support\Facades\Route;
