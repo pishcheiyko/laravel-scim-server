@@ -92,7 +92,7 @@ class BaseResourceController extends BaseController
         if (false === isset($input['schemas'])
         ||  false === is_array($input['schemas'])) {
             throw (new SCIMException('Missing a valid schemas-attribute.'))
-                ->setHttpCode(500);
+                ->setHttpCode(400);
         }
 
         $flattened = Helper::flatten($input, $input['schemas']);
