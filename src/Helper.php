@@ -40,7 +40,7 @@ class Helper
     ): array {
         $object = $object->toArray();
 
-        if (isset($object[0]) && is_object($object[0])) {
+        if (!empty($object) && isset($object[0]) && is_object($object[0])) {
             $result = [];
 
             foreach ($object as $key => $value) {

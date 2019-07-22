@@ -95,7 +95,11 @@ class Collection extends AttributeMapping
     {
         if (null === $key) {
             return $this;
-        } elseif (false === isset($this->collection[0][$key])) {
+        }
+
+        if (true === empty($this->collection)
+        ||  false === is_array($this->collection[0])
+        ||  false === array_key_exists($key, $this->collection[0])) {
             return null;
         }
 

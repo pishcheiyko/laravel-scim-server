@@ -674,7 +674,7 @@ class AttributeMapping
         if (null === $attributeMapping) {
             $result = static::noMapping($parent);
         } elseif (is_array($attributeMapping)) {
-            if (isset($attributeMapping[0])) {
+            if (!empty($attributeMapping) && isset($attributeMapping[0])) {
                 $result = static::arrayOfObjects($attributeMapping, $parent);
             } else {
                 $result = static::object($attributeMapping, $parent);
