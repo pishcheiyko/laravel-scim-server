@@ -313,14 +313,15 @@ class Helper
         $first = array_first($partsCopy);
 
         if (null === $first) {
-            throw (new SCIMException('Unknown error. ' . json_encode($partsCopy)));
+            throw (new SCIMException('Unknown error. ' . json_encode($partsCopy)))
+                ->setHttpCode(500);
         }
 
         if (in_array($first, $schemas)) {
-            $result = '{$first}:';
+            $result = "{$first}:";
             array_shift($partsCopy);
         } else { // If no schema is provided, use the first schema as its schema.
-            $result = '{$schemas[0]}:';
+            $result = "{$schemas[0]}:";
         }
 
         $result .= implode('.', $partsCopy);
