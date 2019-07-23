@@ -100,7 +100,7 @@ class Collection extends AttributeMapping
         if (true === empty($this->collection)
         ||  false === is_array($this->collection[0])
         ||  false === array_key_exists($key, $this->collection[0])) {
-            return null;
+            return $this;
         }
 
         $parent = $this;

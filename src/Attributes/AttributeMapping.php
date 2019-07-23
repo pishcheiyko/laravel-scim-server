@@ -591,7 +591,7 @@ class AttributeMapping
         if (null !== $this->writeAfter) {
             return ($this->writeAfter)($value, $object);
         } else {
-            return $this->writeAfter($value, $object);
+            return $this->writeAfterIgnore($value, $object);
         }
     }
 

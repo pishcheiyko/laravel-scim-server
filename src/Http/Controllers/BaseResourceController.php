@@ -54,7 +54,8 @@ class BaseResourceController extends BaseController
 
         $this->fireGetEvent($resourceObject);
 
-        return Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        $response = Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        return $response;
     }
 
     /**
@@ -121,12 +122,14 @@ class BaseResourceController extends BaseController
         }
 
         foreach ($allAttributeConfigs as &$attributeConfig) {
-            $attributeConfig->writeAfter($flattened[$attributeConfig->getFullKey()], $resourceObject);
+            $fullKey = $attributeConfig->getFullKey();
+            $attributeConfig->writeAfter($flattened[$fullKey], $resourceObject);
         }
 
         $this->fireCreateEvent($resourceObject);
 
-        return Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
+        $response = Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
+        return $response;
     }
 
     /**
@@ -198,7 +201,8 @@ class BaseResourceController extends BaseController
 
         $this->fireReplaceEvent($resourceObject, $originalRaw);
 
-        return Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        $response = Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        return $response;
     }
 
     /**
@@ -288,7 +292,8 @@ class BaseResourceController extends BaseController
 
         $this->fireUpdateEvent($resourceObject, $oldObject);
 
-        return Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        $response = Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        return $response;
     }
 
     /**

@@ -10,8 +10,8 @@ class EloquentAttributeMapping extends AttributeMapping
      */
     public function read(&$object)
     {
-        if ($this->read) {
-            return $this->read($object);
+        if (null !== $this->read) {
+            return ($this->read)($object);
         } else {
             return static::eloquentAttributeToString($object->{$this->eloquentReadAttribute});
         }
