@@ -50,7 +50,7 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        $this->failIfGettingDisallowed($resourceType, $resourceObject);
+        $this->failIfGettingIsDisallowed($resourceType, $resourceObject);
 
         $this->fireGetEvent($resourceObject);
 
@@ -69,7 +69,7 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        $this->failIfDeletingDisallowed($resourceType, $resourceObject);
+        $this->failIfDeletingIsDisallowed($resourceType, $resourceObject);
 
         $resourceObject->delete();
 
@@ -99,7 +99,7 @@ class BaseResourceController extends BaseController
         $flattened = Helper::flatten($input, $input['schemas']);
         $flattened = $this->validateScim($resourceType, $flattened);
 
-        $this->failIfCreatingDisallowed($resourceType, $flattened);
+        $this->failIfCreatingIsDisallowed($resourceType, $flattened);
 
         $class = $resourceType->getClass();
 
@@ -162,7 +162,7 @@ class BaseResourceController extends BaseController
             }
         }
 
-        $this->failIfReplacingDisallowed($resourceType, $resourceObject, $updated);
+        $this->failIfReplacingIsDisallowed($resourceType, $resourceObject, $updated);
 
         // Keep an array of written values
         $uses = [];
@@ -286,7 +286,7 @@ class BaseResourceController extends BaseController
         $newObject = Helper::flatten(Helper::objectToSCIMArray($resourceObject, $resourceType), $resourceType->getSchema());
         $flattened = $this->validateScim($resourceType, $newObject, $resourceObject);
 
-        $this->failIfUpdatingDisallowed($resourceType, $resourceObject, $flattened);
+        $this->failIfUpdatingIsDisallowed($resourceType, $resourceObject, $flattened);
 
         $resourceObject->save();
 
@@ -464,7 +464,7 @@ class BaseResourceController extends BaseController
      * @param Model $resourceObject
      * @throws SCIMException
      */
-    protected function failIfGettingDisallowed(
+    protected function failIfGettingIsDisallowed(
         ResourceType $resourceType,
         Model $resourceObject
     ) {
@@ -479,7 +479,7 @@ class BaseResourceController extends BaseController
      * @param Model $resourceObject
      * @throws SCIMException
      */
-    protected function failIfDeletingDisallowed(
+    protected function failIfDeletingIsDisallowed(
         ResourceType $resourceType,
         Model $resourceObject
     ) {
@@ -494,7 +494,7 @@ class BaseResourceController extends BaseController
      * @param array $flattened
      * @throws SCIMException
      */
-    protected function failIfCreatingDisallowed(
+    protected function failIfCreatingIsDisallowed(
         ResourceType $resourceType,
         array $flattened
     ) {
@@ -510,7 +510,7 @@ class BaseResourceController extends BaseController
      * @param array $flattened
      * @throws SCIMException
      */
-    protected function failIfReplacingDisallowed(
+    protected function failIfReplacingIsDisallowed(
         ResourceType $resourceType,
         Model $resourceObject,
         array $flattened
@@ -527,7 +527,7 @@ class BaseResourceController extends BaseController
      * @param array $flattened
      * @throws SCIMException
      */
-    protected function failIfUpdatingDisallowed(
+    protected function failIfUpdatingIsDisallowed(
         ResourceType $resourceType,
         Model $resourceObject,
         array $flattened
