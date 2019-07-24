@@ -93,7 +93,7 @@ class SCIMConfig
                             'value' => AttributeMapping::eloquent('email'),
                             'display' => null,
                             'type' => AttributeMapping::constant('other')->ignoreWrite(),
-                            'primary' => AttributeMapping::constant(true)->ignoreWrite(),
+                            'primary' => AttributeMapping::constant(false)->ignoreWrite(),
                     ],[
                             'value' => AttributeMapping::eloquent('email'),
                             'display' => null,
