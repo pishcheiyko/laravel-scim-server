@@ -20,7 +20,8 @@ class SCIMHeaders
         &&  $request->header('content-type') != 'application/scim+json'
         &&  $request->header('content-type') != 'application/json'
         &&  strlen($request->getContent()) > 0) {
-            throw new SCIMException('The content-type header should be set to "application/scim+json"');
+            throw (new SCIMException('The content-type header should be set to "application/scim+json"'))
+                ->setHttpCode(400);
         }
 
         $response = $next($request);

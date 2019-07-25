@@ -862,7 +862,7 @@ class AttributeMapping
                 $query->where($attribute, '<=', $value);
                 break;
             default:
-                throw (new SCIMException("Not supported operator '{$operator}'"))
+                throw (new SCIMException("Not supported operator \"{$operator}\""))
                     ->setHttpCode(500);
                 break;
         }
@@ -878,7 +878,8 @@ class AttributeMapping
     {
         //only filter on OWN eloquent attributes
         if (empty($this->eloquentAttributes)) {
-            throw new SCIMException("Can't filter on . " + $this->getFullKey());
+            throw (new SCIMException("Can't filter on \"{$this->getFullKey()}\""))
+                ->setHttpCode(500);
         }
 
         $attribute = $this->eloquentAttributes[0];

@@ -44,7 +44,8 @@ class ResourceTypesController extends BaseController
         });
 
         if ($result == null) {
-            throw (new SCIMException("Resource not found"))->setHttpCode(404);
+            throw (new SCIMException('Resource not found'))
+                ->setHttpCode(404);
         }
 
         return $result;

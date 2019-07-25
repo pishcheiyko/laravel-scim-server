@@ -48,7 +48,7 @@ class SCIMRouteBinding
                     ->setHttpCode(404);
             }
 
-            if (($matchIf = \request()->header('IF-Match'))) {
+            if (($matchIf = request()->header('IF-Match'))) {
                 $versionsAllowed = preg_split('/\s*,\s*/', $matchIf);
                 $currentVersion = Helper::getResourceObjectVersion($resourceObject);
 

@@ -221,9 +221,9 @@ class BaseResourceController extends BaseController
     ): Response {
         $input = $request->input();
 
-        if ($input['schemas'] !== ["urn:ietf:params:scim:api:messages:2.0:PatchOp"]) {
+        if ($input['schemas'] !== ['urn:ietf:params:scim:api:messages:2.0:PatchOp']) {
             throw (new SCIMException(sprintf('Invalid schema "%s". MUST be "urn:ietf:params:scim:api:messages:2.0:PatchOp"', json_encode($input['schemas']))))
-                ->setHttpCode(404);
+                ->setHttpCode(400);
         }
 
         if (isset($input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations'])) {
@@ -258,7 +258,8 @@ class BaseResourceController extends BaseController
                         $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
                         $attributeConfig->remove($operation['value'] ?? null, $resourceObject);
                     } else {
-                        throw new SCIMException('You MUST provide a "Path"');
+                        throw (new SCIMException('You MUST provide a "Path"'))
+                            ->setHttpCode(400);
                     }
                     break;
 
@@ -275,7 +276,8 @@ class BaseResourceController extends BaseController
                     break;
 
                 default:
-                    throw new SCIMException(sprintf('Operation "%s" is not supported', $operation['op']));
+                    throw (new SCIMException("Operation \"{$operation['op']}\" is not supported."))
+                        ->setHttpCode(500);
                     break;
             }
         }

@@ -29,7 +29,8 @@ class SchemaController extends BaseController
             $schema = (new SchemaBuilderV2())->get($value['schema'][0]);
 
             if ($schema == null) {
-                throw new SCIMException("Schema not found");
+                throw (new SCIMException('Schema not found'))
+                    ->setHttpCode(404);
             }
 
             $schema->getMeta()->setLocation(route('scim.schemas', ['id' => '23']));
@@ -49,7 +50,8 @@ class SchemaController extends BaseController
         });
 
         if ($result == null) {
-            throw (new SCIMException(sprintf('Resource "%s" not found', $id)))->setHttpCode(404);
+            throw (new SCIMException("Resource \"{$id}\" not found"))
+                ->setHttpCode(404);
         }
 
         return $result;

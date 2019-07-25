@@ -70,7 +70,8 @@ class MeController extends BaseResourceController
         $resourceObject = $class::find($subject->getUserId());
 
         if (null === $resourceObject) {
-            throw new SCIMException('This is not a registered user');
+            throw (new SCIMException('This is not a registered user'))
+                ->setHttpCode(404);
         }
 
         return parent::showModel($request, $resourceType, $resourceObject);
