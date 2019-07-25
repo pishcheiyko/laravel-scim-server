@@ -277,7 +277,7 @@ class BaseResourceController extends BaseController
 
                 default:
                     throw (new SCIMException("Operation \"{$operation['op']}\" is not supported."))
-                        ->setHttpCode(500);
+                        ->setHttpCode(400);
                     break;
             }
         }
