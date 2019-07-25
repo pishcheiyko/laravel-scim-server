@@ -750,8 +750,6 @@ class AttributeMapping
             return $this;
         }
 
-        // TODO: This code is wrong!!!
-
         $getAttributePath = function () {
             return $this->attributePath;
         };

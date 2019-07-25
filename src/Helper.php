@@ -195,8 +195,6 @@ class Helper
                 });
             }
         } elseif ($node instanceof ValuePath) {
-            // TODO: This code is wrong!!!
-
             // ->filer
             $getAttributePath = function () {
                 return $this->attributePath;
