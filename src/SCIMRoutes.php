@@ -57,8 +57,8 @@ class SCIMRoutes
         Route::get('/ServiceProviderConfig', ServiceProviderController::class . '@index')
             ->name('scim.serviceproviderconfig');
 
-        Route::get('/Schemas', SchemaController::class . '@index');
-        Route::get('/Schemas/{id}', SchemaController::class . '@show')->name('scim.schemas');
+        Route::get('/Schemas', SchemaController::class . '@index')->name('scim.schemas');
+        Route::get('/Schemas/{id}', SchemaController::class . '@show')->name('scim.schema');
 
         Route::get('/ResourceTypes', ResourceTypesController::class . '@index');
         Route::get('/ResourceTypes/{id}', ResourceTypesController::class . '@show')

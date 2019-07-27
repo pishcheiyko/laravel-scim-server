@@ -14,7 +14,7 @@ class SchemaController extends BaseController
 
     public function getSchemas()
     {
-        if ($this->schemas != null) {
+        if (null !== $this->schemas) {
             return $this->schemas;
         }
 
@@ -34,9 +34,10 @@ class SchemaController extends BaseController
                     ->setHttpCode(404);
             }
 
-            // @ash TODO: why 23?
             $schema->getMeta()->setLocation(
-                resolve(SCIMRoutes::class)->route('scim.schemas', ['id' => '23'])
+                resolve(SCIMRoutes::class)->route('scim.schema', [
+                    'id' =>  $schema->id,
+                ])
             );
 
             $schemas[] = $schema->serializeObject();
@@ -49,11 +50,13 @@ class SchemaController extends BaseController
 
     public function show($id)
     {
-        $result = $this->schemas->first(function ($value, $key) use ($id) {
+        $schemas = $this->getSchemas();
+
+        $result = $schemas->first(function ($value, $key) use ($id) {
             return $value['id'] == $id;
         });
 
-        if ($result == null) {
+        if (null === $result) {
             throw (new SCIMException("Resource \"{$id}\" not found"))
                 ->setHttpCode(404);
         }
