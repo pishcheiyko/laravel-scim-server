@@ -30,9 +30,9 @@ class SCIMRoutes
 
     public function allRoutes()
     {
-        $this->resourceRoutes();
         $this->meRoutes();
         $this->publicRoutes();
+        $this->resourceRoutes();
 
         Route::post('/Bulk', ResourceController::class . '@notImplemented');
         Route::post('.search', ResourceController::class . '@notImplemented');
