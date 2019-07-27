@@ -36,7 +36,7 @@ class SchemaController extends BaseController
 
             $schema->getMeta()->setLocation(
                 resolve(SCIMRoutes::class)->route('scim.schema', [
-                    'id' =>  $schema->id,
+                    'id' =>  $schema->getId(),
                 ])
             );
 
