@@ -28,6 +28,19 @@ class SCIMRoutes
         ];
     }
 
+    /**
+     * Generate the URL to a named route.
+     *
+     * @param  array|string  $name
+     * @param  mixed  $parameters
+     * @param  bool  $absolute
+     * @return string
+     */
+    public function route($name, $parameters = [], $absolute = true): string
+    {
+        return \route($name, $parameters, $absolute);
+    }
+
     public function allRoutes()
     {
         $this->meRoutes();

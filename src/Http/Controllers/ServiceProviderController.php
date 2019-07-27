@@ -2,6 +2,7 @@
 
 namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
+use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use Illuminate\Support\Carbon;
 
 class ServiceProviderController extends BaseController
@@ -47,7 +48,7 @@ class ServiceProviderController extends BaseController
                 ],
             ],
             'meta' => [
-                'location' => route('scim.serviceproviderconfig'),
+                'location' => resolve(SCIMRoutes::class)->route('scim.serviceproviderconfig'),
                 'resourceType' => 'ServiceProviderConfig',
                 'created' => Carbon::createFromTimestampUTC(filectime(__FILE__))->format('c'),
                 'lastModified' => Carbon::createFromTimestampUTC(filemtime(__FILE__))->format('c'),

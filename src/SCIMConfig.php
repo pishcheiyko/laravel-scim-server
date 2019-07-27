@@ -2,6 +2,7 @@
 
 namespace UniqKey\Laravel\SCIMServer;
 
+use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Helper;
 use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
@@ -54,7 +55,7 @@ class SCIMConfig
                     'created' => AttributeMapping::eloquent('created_at')->disableWrite(),
                     'lastModified' => AttributeMapping::eloquent('updated_at')->disableWrite(),
                     'location' => (new AttributeMapping())->setRead(function ($object) {
-                        return route('scim.resource', [
+                        return resolve(SCIMRoutes::class)->route('scim.resource', [
                             'name' => 'Users',
                             'id' => $object->id,
                         ]);

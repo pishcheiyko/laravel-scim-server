@@ -2,6 +2,7 @@
 
 namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
+use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use Tmilos\ScimSchema\Builder\SchemaBuilderV2;
 use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
@@ -33,7 +34,10 @@ class SchemaController extends BaseController
                     ->setHttpCode(404);
             }
 
-            $schema->getMeta()->setLocation(route('scim.schemas', ['id' => '23']));
+            // @ash TODO: why 23?
+            $schema->getMeta()->setLocation(
+                resolve(SCIMRoutes::class)->route('scim.schemas', ['id' => '23'])
+            );
 
             $schemas[] = $schema->serializeObject();
         }
