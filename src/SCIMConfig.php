@@ -2,8 +2,8 @@
 
 namespace UniqKey\Laravel\SCIMServer;
 
-use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use UniqKey\Laravel\SCIMServer\SCIM\Schema;
+use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use UniqKey\Laravel\SCIMServer\Helper;
 use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
 
@@ -32,13 +32,13 @@ class SCIMConfig
             // Set to 'null' to make use of auth.providers.users.model (App\User::class)
             'class' => Helper::getAuthUserClass(),
             'validations' => [
-                'urn:ietf:params:scim:schemas:core:2.0:User:userName' => 'required',
-                'urn:ietf:params:scim:schemas:core:2.0:User:password' => 'nullable',
-                'urn:ietf:params:scim:schemas:core:2.0:User:active' => 'boolean',
-                'urn:ietf:params:scim:schemas:core:2.0:User:emails' => 'required|array',
-                'urn:ietf:params:scim:schemas:core:2.0:User:emails.*.value' => 'required|email',
-                'urn:ietf:params:scim:schemas:core:2.0:User:roles' => 'nullable|array',
-                'urn:ietf:params:scim:schemas:core:2.0:User:roles.*.value' => 'required',
+                Schema::SCHEMA_USER . ':userName' => 'required',
+                Schema::SCHEMA_USER . ':password' => 'nullable',
+                Schema::SCHEMA_USER . ':active' => 'boolean',
+                Schema::SCHEMA_USER . ':emails' => 'required|array',
+                Schema::SCHEMA_USER . ':emails.*.value' => 'required|email',
+                Schema::SCHEMA_USER . ':roles' => 'nullable|array',
+                Schema::SCHEMA_USER . ':roles.*.value' => 'required',
             ],
             'singular' => 'User',
             'schema' => [Schema::SCHEMA_USER],
@@ -63,13 +63,13 @@ class SCIMConfig
                     'resourceType' => AttributeMapping::constant('User'),
                 ],
                 'schemas' => AttributeMapping::constant([
-                    'urn:ietf:params:scim:schemas:core:2.0:User',
+                    Schema::SCHEMA_USER,
                     'example:name:space',
                 ])->ignoreWrite(),
                 'example:name:space' => [
                     'cityPrefix' => AttributeMapping::eloquent('cityPrefix'),
                 ],
-                'urn:ietf:params:scim:schemas:core:2.0:User' => [
+                Schema::SCHEMA_USER => [
                     'userName' => AttributeMapping::eloquent('name'),
                     'name' => [
                         'formatted' => AttributeMapping::eloquent('name'),

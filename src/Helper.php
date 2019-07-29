@@ -16,6 +16,7 @@ use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Ast\Path;
 use Tmilos\ScimFilterParser\Ast\AttributePath;
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
@@ -247,9 +248,9 @@ class Helper
 
         // TODO: FIX this. If $scimAttribute is a schema-indication,
         //       it should be considered as a schema.
-        if ($scimAttribute == 'urn:ietf:params:scim:schemas:core:2.0:User') {
+        if ($scimAttribute == Schema::SCHEMA_USER) {
             $attributePath = new AttributePath();
-            $attributePath->schema = 'urn:ietf:params:scim:schemas:core:2.0:User';
+            $attributePath->schema = Schema::SCHEMA_USER;
 
             $path = Path::fromAttributePath($attributePath);
         }

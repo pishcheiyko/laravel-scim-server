@@ -2,6 +2,7 @@
 
 namespace UniqKey\Laravel\SCIMServer\SCIM;
 
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
@@ -69,7 +70,7 @@ class ResourceType implements Jsonable, Arrayable
         $scimRoutes = resolve(SCIMRoutes::class);
 
         return [
-            'schemas' => ['urn:ietf:params:scim:schemas:core:2.0:ResourceType',],
+            'schemas' => [Schema::SCHEMA_RESOURCE_TYPE],
             'id' => $this->id,
             'name' => $this->name,
             'endpoint' => $scimRoutes->route('scim.resources', ['resourceType' => $this->plural,]),

@@ -2,6 +2,7 @@
 
 namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\SCIMRoutes;
 use Illuminate\Support\Carbon;
 
@@ -10,7 +11,7 @@ class ServiceProviderController extends BaseController
     public function index()
     {
         return [
-            'schemas' => ['urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig'],
+            'schemas' => [Schema::SCHEMA_SERVICE_PROVIDER_CONFIG],
             'patch' => [
                 'supported' => true,
             ],
