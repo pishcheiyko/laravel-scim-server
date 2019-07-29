@@ -133,11 +133,16 @@ class ResourceController extends BaseResourceController
             }
         }
 
+        $result = $attributes = $excludedAttributes = [];
+
         $resourceObjects = $resourceObjects->get();
-        $attributes = $excludedAttributes = [];
+        foreach ($resourceObjects as $resourceObject) {
+            $item = Helper::objectToSCIMArray($resourceObject, $resourceType);
+            $result[] = $item;
+        }
 
         return response(new ListResponse(
-            $resourceObjects,
+            collect($result),
             $startIndex,
             $totalResults,
             $attributes,
