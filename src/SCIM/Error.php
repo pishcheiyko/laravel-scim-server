@@ -46,7 +46,7 @@ class Error implements Jsonable
     public function toJson($options = 0)
     {
         return json_encode(array_filter([
-            'schemas' => ['urn:ietf:params:scim:api:messages:2.0:Error',],
+            'schemas' => [Schema::SCHEMA_ERROR],
             'detail' => $this->detail,
             'status' => $this->status,
             'scimType' => ($this->status == 400 ? $this->scimType : null),

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use UniqKey\Laravel\SCIMServer\ResourceType;
 use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 use UniqKey\Laravel\SCIMServer\Events\Get;
@@ -221,14 +222,17 @@ class BaseResourceController extends BaseController
     ): Response {
         $input = $request->input();
 
-        if ($input['schemas'] !== ['urn:ietf:params:scim:api:messages:2.0:PatchOp']) {
-            throw (new SCIMException(sprintf('Invalid schema "%s". MUST be "urn:ietf:params:scim:api:messages:2.0:PatchOp"', json_encode($input['schemas']))))
-                ->setHttpCode(400);
+        if ($input['schemas'] !== [Schema::SCHEMA_PATCH_OP]) {
+            throw (new SCIMException(sprintf(
+                'Invalid schema "%s". MUST be "%s"',
+                json_encode($input['schemas']),
+                Schema::SCHEMA_PATCH_OP
+            )))->setHttpCode(400);
         }
 
-        if (isset($input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations'])) {
-            $input['Operations'] = $input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations'];
-            unset($input['urn:ietf:params:scim:api:messages:2.0:PatchOp:Operations']);
+        if (isset($input[Schema::SCHEMA_PATCH_OP . ':Operations'])) {
+            $input['Operations'] = $input[Schema::SCHEMA_PATCH_OP . ':Operations'];
+            unset($input[Schema::SCHEMA_PATCH_OP . ':Operations']);
         }
 
         $oldObject = Helper::objectToSCIMArray($resourceObject, $resourceType);

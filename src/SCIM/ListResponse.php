@@ -63,7 +63,7 @@ class ListResponse implements Jsonable, Arrayable
             'totalResults' => $this->totalResults,
             'itemsPerPage' => count($this->resourceObjects->toArray()),
             'startIndex' => $this->startIndex,
-            'schemas' => ['urn:ietf:params:scim:api:messages:2.0:ListResponse',],
+            'schemas' => [Schema::SCHEMA_LIST_RESPONSE],
             'Resources' => Helper::prepareReturn($this->resourceObjects, $this->resourceType),
         ];
     }
