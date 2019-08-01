@@ -4,7 +4,7 @@ namespace UniqKey\Laravel\SCIMServer;
 
 use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\SCIMRoutes;
-use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIMHelper;
 use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
 
 class SCIMConfig
@@ -30,7 +30,7 @@ class SCIMConfig
     {
         return [
             // Set to 'null' to make use of auth.providers.users.model (App\User::class)
-            'class' => resolve(Helper::class)->getAuthUserClass(),
+            'class' => resolve(SCIMHelper::class)->getAuthUserClass(),
             'validations' => [
                 Schema::SCHEMA_USER . ':userName' => 'required',
                 Schema::SCHEMA_USER . ':password' => 'nullable',

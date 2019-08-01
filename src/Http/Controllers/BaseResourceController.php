@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use UniqKey\Laravel\SCIMServer\ResourceType;
-use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIMHelper;
 use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
@@ -55,7 +55,7 @@ class BaseResourceController extends BaseController
 
         $this->fireGetEvent($resourceObject);
 
-        $response = resolve(Helper::class)->objectToSCIMResponse(
+        $response = resolve(SCIMHelper::class)->objectToSCIMResponse(
             $resourceObject,
             $resourceType
         );
@@ -100,7 +100,7 @@ class BaseResourceController extends BaseController
                 ->setHttpCode(400);
         }
 
-        $helper = resolve(Helper::class);
+        $helper = resolve(SCIMHelper::class);
 
         $flattened = $helper->flatten($input, $input['schemas']);
         $flattened = $this->validateScim($resourceType, $flattened);
@@ -153,7 +153,7 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        $helper = resolve(Helper::class);
+        $helper = resolve(SCIMHelper::class);
 
         $originalRaw = $helper->objectToSCIMArray($resourceObject, $resourceType);
         $original = $helper->flatten($originalRaw, $resourceType->getSchema());
@@ -241,7 +241,7 @@ class BaseResourceController extends BaseController
             unset($input[Schema::SCHEMA_PATCH_OP . ':Operations']);
         }
 
-        $helper = resolve(Helper::class);
+        $helper = resolve(SCIMHelper::class);
 
         $oldObject = $helper->objectToSCIMArray($resourceObject, $resourceType);
 

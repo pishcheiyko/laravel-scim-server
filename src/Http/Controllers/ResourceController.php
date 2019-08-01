@@ -8,7 +8,7 @@ use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Error\FilterException;
 use UniqKey\Laravel\SCIMServer\ResourceType;
-use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIMHelper;
 use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
 use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
@@ -91,7 +91,7 @@ class ResourceController extends BaseResourceController
     {
         $class = $resourceType->getClass();
 
-        $helper = resolve(Helper::class);
+        $helper = resolve(SCIMHelper::class);
 
         $filter = $request->input('filter');
         $resourceObjectsBase = $class::when(

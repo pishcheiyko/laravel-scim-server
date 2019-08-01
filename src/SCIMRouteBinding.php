@@ -4,7 +4,7 @@ namespace UniqKey\Laravel\SCIMServer;
 
 use UniqKey\Laravel\SCIMServer\SCIMConfig;
 use UniqKey\Laravel\SCIMServer\ResourceType;
-use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIMHelper;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class SCIMRouteBinding
@@ -50,7 +50,7 @@ class SCIMRouteBinding
 
             if (($matchIf = request()->header('IF-Match'))) {
                 $versionsAllowed = preg_split('/\s*,\s*/', $matchIf);
-                $currentVersion = resolve(Helper::class)->getResourceObjectVersion($resourceObject);
+                $currentVersion = resolve(SCIMHelper::class)->getResourceObjectVersion($resourceObject);
 
                 // if as version is '*' it is always ok
                 if (false === in_array($currentVersion, $versionsAllowed)

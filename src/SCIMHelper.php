@@ -20,7 +20,7 @@ use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
-class Helper
+class SCIMHelper
 {
     /**
      * @return string

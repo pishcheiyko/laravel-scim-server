@@ -4,7 +4,7 @@ namespace UniqKey\Laravel\SCIMServer\SCIM;
 
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
-use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIMHelper;
 use UniqKey\Laravel\SCIMServer\ResourceType;
 
 class ListResponse implements Jsonable, Arrayable
@@ -64,7 +64,7 @@ class ListResponse implements Jsonable, Arrayable
             'itemsPerPage' => count($this->resourceObjects->toArray()),
             'startIndex' => $this->startIndex,
             'schemas' => [Schema::SCHEMA_LIST_RESPONSE],
-            'Resources' => resolve(Helper::class)->prepareReturn(
+            'Resources' => resolve(SCIMHelper::class)->prepareReturn(
                 $this->resourceObjects,
                 $this->resourceType
             ),

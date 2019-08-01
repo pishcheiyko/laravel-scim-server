@@ -5,7 +5,7 @@ namespace UniqKey\Laravel\SCIMServer\Attributes;
 use Illuminate\Support\Carbon;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 use UniqKey\Laravel\SCIMServer\SCIM\Schema;
-use UniqKey\Laravel\SCIMServer\Helper;
+use UniqKey\Laravel\SCIMServer\SCIMHelper;
 
 class AttributeMapping
 {
@@ -474,7 +474,7 @@ class AttributeMapping
             return !empty($value);
         });
 
-        return resolve(Helper::class)->getFlattenKey(
+        return resolve(SCIMHelper::class)->getFlattenKey(
             $fullKey,
             [$this->getSchema() ?? $this->getDefaultSchema(),]
         );
