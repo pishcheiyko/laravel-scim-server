@@ -50,7 +50,7 @@ class SCIMRouteBinding
 
             if (($matchIf = request()->header('IF-Match'))) {
                 $versionsAllowed = preg_split('/\s*,\s*/', $matchIf);
-                $currentVersion = Helper::getResourceObjectVersion($resourceObject);
+                $currentVersion = resolve(Helper::class)->getResourceObjectVersion($resourceObject);
 
                 // if as version is '*' it is always ok
                 if (false === in_array($currentVersion, $versionsAllowed)

@@ -91,19 +91,24 @@ class ResourceController extends BaseResourceController
     {
         $class = $resourceType->getClass();
 
-        $filter = $request->input('filter');
-        $resourceObjectsBase = $class::when($filter, function ($query) use ($filter, $resourceType) {
-            try {
-                $parser = new Parser(Mode::FILTER());
+        $helper = resolve(Helper::class);
 
-                $node = $parser->parse($filter);
-                Helper::scimFilterToLaravelQuery($resourceType, $query, $node);
-            } catch (FilterException $e) {
-                throw (new SCIMException($e->getMessage(), 0, $e))
-                    ->setHttpCode(400)
-                    ->setScimType('invalidFilter');
+        $filter = $request->input('filter');
+        $resourceObjectsBase = $class::when(
+            $filter,
+            function ($query) use ($filter, $resourceType, $helper) {
+                try {
+                    $parser = new Parser(Mode::FILTER());
+
+                    $node = $parser->parse($filter);
+                    $helper->scimFilterToLaravelQuery($resourceType, $query, $node);
+                } catch (FilterException $e) {
+                    throw (new SCIMException($e->getMessage(), 0, $e))
+                        ->setHttpCode(400)
+                        ->setScimType('invalidFilter');
+                }
             }
-        });
+        );
 
         $totalResults = $resourceObjectsBase->count();
 
@@ -124,7 +129,7 @@ class ResourceController extends BaseResourceController
         $resourceObjects = $resourceObjects->with($resourceType->getWithRelations());
 
         if ($request->input('sortBy')) {
-            $sortBy = Helper::getEloquentSortAttribute($resourceType, $request->input('sortBy'));
+            $sortBy = $helper->getEloquentSortAttribute($resourceType, $request->input('sortBy'));
 
             if (null !== $sortBy) {
                 $direction = $request->input('sortOrder') == 'descending' ? 'desc' : 'asc';
@@ -137,7 +142,7 @@ class ResourceController extends BaseResourceController
 
         $resourceObjects = $resourceObjects->get();
         foreach ($resourceObjects as $resourceObject) {
-            $item = Helper::objectToSCIMArray($resourceObject, $resourceType);
+            $item = $helper->objectToSCIMArray($resourceObject, $resourceType);
             $result[] = $item;
         }
 

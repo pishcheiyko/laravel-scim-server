@@ -64,7 +64,10 @@ class ListResponse implements Jsonable, Arrayable
             'itemsPerPage' => count($this->resourceObjects->toArray()),
             'startIndex' => $this->startIndex,
             'schemas' => [Schema::SCHEMA_LIST_RESPONSE],
-            'Resources' => Helper::prepareReturn($this->resourceObjects, $this->resourceType),
+            'Resources' => resolve(Helper::class)->prepareReturn(
+                $this->resourceObjects,
+                $this->resourceType
+            ),
         ];
     }
 }

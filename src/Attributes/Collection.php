@@ -24,8 +24,6 @@ class Collection extends AttributeMapping
 
     /**
      * {@inheritdoc}
-     *
-     * @todo See 'TODO' below
      */
     public function add($value, &$object)
     {

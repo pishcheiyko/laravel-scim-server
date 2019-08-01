@@ -474,7 +474,7 @@ class AttributeMapping
             return !empty($value);
         });
 
-        return Helper::getFlattenKey(
+        return resolve(Helper::class)->getFlattenKey(
             $fullKey,
             [$this->getSchema() ?? $this->getDefaultSchema(),]
         );
@@ -596,7 +596,7 @@ class AttributeMapping
     }
 
     /**
-     * @todo See 'TODO' below
+     * @todo Really implement replace ...???
      *
      * @param mixed $value
      * @param mixed $object
@@ -604,9 +604,6 @@ class AttributeMapping
      */
     public function replace($value, &$object)
     {
-        //TODO: Really implement replace ...???
-        // $current = $this->read($object);
-
         if (null !== $this->replace) {
             return ($this->replace)($value, $object);
         } else {
@@ -615,7 +612,7 @@ class AttributeMapping
     }
 
     /**
-     * @todo implement remove for multi valued attributes
+     * @todo Implement remove for multi valued attributes
      *
      * @param mixed $value
      * @param mixed $object

@@ -30,10 +30,7 @@
             "providers": [
                 "UniqKey\\Laravel\\SCIMServer\\Providers\\ServiceProvider",
                 "UniqKey\\Laravel\\SCIMServer\\Providers\\RouteServiceProvider"
-            ],
-            "aliases": {
-                "SCIMServerHelper": "UniqKey\\Laravel\\SCIMServer\\Helper"
-            }
+            ]
         }
     },
     "autoload": {

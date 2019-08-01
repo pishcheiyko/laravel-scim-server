@@ -30,7 +30,7 @@ class SCIMConfig
     {
         return [
             // Set to 'null' to make use of auth.providers.users.model (App\User::class)
-            'class' => Helper::getAuthUserClass(),
+            'class' => resolve(Helper::class)->getAuthUserClass(),
             'validations' => [
                 Schema::SCHEMA_USER . ':userName' => 'required',
                 Schema::SCHEMA_USER . ':password' => 'nullable',

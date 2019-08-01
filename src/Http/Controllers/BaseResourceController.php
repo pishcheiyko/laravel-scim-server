@@ -55,7 +55,10 @@ class BaseResourceController extends BaseController
 
         $this->fireGetEvent($resourceObject);
 
-        $response = Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        $response = resolve(Helper::class)->objectToSCIMResponse(
+            $resourceObject,
+            $resourceType
+        );
         return $response;
     }
 
@@ -97,7 +100,9 @@ class BaseResourceController extends BaseController
                 ->setHttpCode(400);
         }
 
-        $flattened = Helper::flatten($input, $input['schemas']);
+        $helper = resolve(Helper::class);
+
+        $flattened = $helper->flatten($input, $input['schemas']);
         $flattened = $this->validateScim($resourceType, $flattened);
 
         $this->failIfCreatingIsDisallowed($resourceType, $flattened);
@@ -110,7 +115,10 @@ class BaseResourceController extends BaseController
         $allAttributeConfigs = [];
 
         foreach ($flattened as $scimAttribute => $value) {
-            $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $scimAttribute);
+            $attributeConfig = $helper->getAttributeConfigOrFail(
+                $resourceType,
+                $scimAttribute
+            );
             $attributeConfig->add($value, $resourceObject);
             $allAttributeConfigs[] = $attributeConfig;
         }
@@ -129,13 +137,11 @@ class BaseResourceController extends BaseController
 
         $this->fireCreateEvent($resourceObject);
 
-        $response = Helper::objectToSCIMCreateResponse($resourceObject, $resourceType);
+        $response = $helper->objectToSCIMCreateResponse($resourceObject, $resourceType);
         return $response;
     }
 
     /**
-     * @todo See 'TODO:' below
-     *
      * @param Request $request
      * @param ResourceType $resourceType
      * @param Model $resourceObject
@@ -147,11 +153,13 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
-        $originalRaw = Helper::objectToSCIMArray($resourceObject, $resourceType);
-        $original = Helper::flatten($originalRaw, $resourceType->getSchema());
+        $helper = resolve(Helper::class);
+
+        $originalRaw = $helper->objectToSCIMArray($resourceObject, $resourceType);
+        $original = $helper->flatten($originalRaw, $resourceType->getSchema());
 
         // TODO: get flattend from $resourceObject
-        $flattened = Helper::flatten($request->input(), $resourceType->getSchema());
+        $flattened = $helper->flatten($request->input(), $resourceType->getSchema());
         $flattened = $this->validateScim($resourceType, $flattened, $resourceObject);
 
         $updated = [];
@@ -170,7 +178,7 @@ class BaseResourceController extends BaseController
 
         // Write all values
         foreach ($flattened as $scimAttribute => $value) {
-            $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $scimAttribute);
+            $attributeConfig = $helper->getAttributeConfigOrFail($resourceType, $scimAttribute);
 
             if ($attributeConfig->isWriteSupported()) {
                 $attributeConfig->replace($value, $resourceObject);
@@ -193,8 +201,8 @@ class BaseResourceController extends BaseController
         foreach ($allAttributeConfigs as $attributeConfig) {
             // Do not write write-only attributes (such as passwords)
             if ($attributeConfig->isReadSupported() && $attributeConfig->isWriteSupported()) {
-                // @ash TODO: why ArieTimmerman marks this line as commented ???
-                //   $attributeConfig->remove($resourceObject);
+                // @ash TODO: why ArieTimmerman marks the following line as commented ???
+                // $attributeConfig->remove($resourceObject);
             }
         }
 
@@ -202,13 +210,11 @@ class BaseResourceController extends BaseController
 
         $this->fireReplaceEvent($resourceObject, $originalRaw);
 
-        $response = Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        $response = $helper->objectToSCIMResponse($resourceObject, $resourceType);
         return $response;
     }
 
     /**
-     * @todo See 'TODO:' below
-     *
      * @param Request $request
      * @param ResourceType $resourceType
      * @param Model $resourceObject
@@ -235,20 +241,28 @@ class BaseResourceController extends BaseController
             unset($input[Schema::SCHEMA_PATCH_OP . ':Operations']);
         }
 
-        $oldObject = Helper::objectToSCIMArray($resourceObject, $resourceType);
+        $helper = resolve(Helper::class);
+
+        $oldObject = $helper->objectToSCIMArray($resourceObject, $resourceType);
 
         foreach ($input['Operations'] as $operation) {
             switch (strtolower($operation['op'])) {
                 case 'add':
                     if (isset($operation['path'])) {
-                        $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
+                        $attributeConfig = $helper->getAttributeConfigOrFail(
+                            $resourceType,
+                            $operation['path']
+                        );
 
                         foreach ($operation['value'] as $value) {
                             $attributeConfig->add($value, $resourceObject);
                         }
                     } else {
                         foreach ($operation['value'] as $key => $value) {
-                            $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $key);
+                            $attributeConfig = $helper->getAttributeConfigOrFail(
+                                $resourceType,
+                                $key
+                            );
 
                             foreach ($value as $v) {
                                 $attributeConfig->add($v, $resourceObject);
@@ -259,7 +273,10 @@ class BaseResourceController extends BaseController
 
                 case 'remove':
                     if (isset($operation['path'])) {
-                        $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
+                        $attributeConfig = $helper->getAttributeConfigOrFail(
+                            $resourceType,
+                            $operation['path']
+                        );
                         $attributeConfig->remove($operation['value'] ?? null, $resourceObject);
                     } else {
                         throw (new SCIMException('You MUST provide a "Path"'))
@@ -269,11 +286,17 @@ class BaseResourceController extends BaseController
 
                 case 'replace':
                     if (isset($operation['path'])) {
-                        $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $operation['path']);
+                        $attributeConfig = $helper->getAttributeConfigOrFail(
+                            $resourceType,
+                            $operation['path']
+                        );
                         $attributeConfig->replace($operation['value'], $resourceObject);
                     } else {
                         foreach ($operation['value'] as $key => $value) {
-                            $attributeConfig = Helper::getAttributeConfigOrFail($resourceType, $key);
+                            $attributeConfig = $helper->getAttributeConfigOrFail(
+                                $resourceType,
+                                $key
+                            );
                             $attributeConfig->replace($value, $resourceObject);
                         }
                     }
@@ -289,7 +312,10 @@ class BaseResourceController extends BaseController
         // TODO: prevent something from getten written before ...
         // $dirty = $resourceObject->getDirty();
 
-        $newObject = Helper::flatten(Helper::objectToSCIMArray($resourceObject, $resourceType), $resourceType->getSchema());
+        $newObject = $helper->flatten(
+            $helper->objectToSCIMArray($resourceObject, $resourceType),
+            $resourceType->getSchema()
+        );
         $flattened = $this->validateScim($resourceType, $newObject, $resourceObject);
 
         $this->failIfUpdatingIsDisallowed($resourceType, $resourceObject, $flattened);
@@ -298,7 +324,7 @@ class BaseResourceController extends BaseController
 
         $this->fireUpdateEvent($resourceObject, $oldObject);
 
-        $response = Helper::objectToSCIMResponse($resourceObject, $resourceType);
+        $response = $helper->objectToSCIMResponse($resourceObject, $resourceType);
         return $response;
     }
 
