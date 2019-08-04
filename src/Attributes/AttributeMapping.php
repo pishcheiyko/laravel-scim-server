@@ -333,7 +333,7 @@ class AttributeMapping
     {
         $disable = function ($value, &$object) {
             throw (new SCIMException(sprintf('Write to "%s" is not supported', $this->getFullKey())))
-                ->setHttpCode(500)
+                ->setHttpCode(400)
                 ->setScimType('mutability');
         };
 
@@ -680,7 +680,7 @@ class AttributeMapping
             $result = $attributeMapping->setParent($parent);
         } else {
             throw (new SCIMException(sprintf('Found unknown attribute "%s"', $attributeMapping)))
-                ->setHttpCode(500);
+                ->setHttpCode(400);
         }
 
         return $result;
@@ -733,7 +733,7 @@ class AttributeMapping
                 ->setSchema($schema);
         } else {
             throw (new SCIMException(sprintf('No mapping for "%s" in "%s"', $key, $this->getFullKey())))
-                ->setHttpCode(500);
+                ->setHttpCode(400);
         }
     }
 
@@ -788,7 +788,7 @@ class AttributeMapping
         &&  false === empty($this->getSchema())
         &&  $this->getSchema() != $schema) {
             throw (new SCIMException(sprintf('Trying to get attribute for schema "%s". But schema is already "%s"', $attributePath->schema, $this->getSchema())))
-                ->setHttpCode(500)
+                ->setHttpCode(400)
                 ->setScimType('noTarget');
         }
 
@@ -860,7 +860,7 @@ class AttributeMapping
                 break;
             default:
                 throw (new SCIMException("Not supported operator \"{$operator}\""))
-                    ->setHttpCode(500);
+                    ->setHttpCode(400);
                 break;
         }
     }
@@ -876,7 +876,7 @@ class AttributeMapping
         //only filter on OWN eloquent attributes
         if (empty($this->eloquentAttributes)) {
             throw (new SCIMException("Can't filter on \"{$this->getFullKey()}\""))
-                ->setHttpCode(500);
+                ->setHttpCode(400);
         }
 
         $attribute = $this->eloquentAttributes[0];
