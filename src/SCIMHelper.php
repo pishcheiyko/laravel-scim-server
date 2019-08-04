@@ -218,27 +218,14 @@ class SCIMHelper
     }
 
     /**
-     * $scimAttribute could be
-     * - urn:ietf:params:scim:schemas:core:2.0:User.userName
-     * - userName
-     * - urn:ietf:params:scim:schemas:core:2.0:User.userName.name.formatted
-     * - urn:ietf:params:scim:schemas:core:2.0:User.emails.value
-     * - emails.value
-     * - emails.0.value
-     * - schemas.0
-     *
      * @todo See 'TODO:' below..
      * @todo How about groups?
-     * @todo The method never returns null..
      *
-     * @param ResourceType $resourceType
      * @param string $scimAttribute
-     * @return AttributeMapping|null
+     * @return mixed
      */
-    public static function getAttributeConfig(
-        ResourceType $resourceType,
-        string $scimAttribute
-    ): ?AttributeMapping {
+    public static function getPath(string $scimAttribute)
+    {
         $parser = new Parser(Mode::PATH());
 
         $scimAttribute = preg_replace('/\.[0-9]+$/', '', $scimAttribute);
@@ -255,6 +242,28 @@ class SCIMHelper
             $path = Path::fromAttributePath($attributePath);
         }
 
+        return $path;
+    }
+
+    /**
+     * $scimAttribute could be
+     * - urn:ietf:params:scim:schemas:core:2.0:User.userName
+     * - userName
+     * - urn:ietf:params:scim:schemas:core:2.0:User.userName.name.formatted
+     * - urn:ietf:params:scim:schemas:core:2.0:User.emails.value
+     * - emails.value
+     * - emails.0.value
+     * - schemas.0
+     *
+     * @param ResourceType $resourceType
+     * @param string $scimAttribute
+     * @return AttributeMapping|null
+     */
+    public static function getAttributeConfig(
+        ResourceType $resourceType,
+        string $scimAttribute
+    ): ?AttributeMapping {
+        $path = static::getPath($scimAttribute);
         return $resourceType->getMapping()->getSubNodeWithPath($path);
     }
 
