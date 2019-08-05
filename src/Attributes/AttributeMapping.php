@@ -747,14 +747,15 @@ class AttributeMapping
             return $this;
         }
 
+        /**
+         * https://www.php.net/manual/en/closure.call.php
+         */
         $getAttributePath = function () {
             return $this->attributePath;
         };
-
         $getValuePath = function () {
             return $this->valuePath;
         };
-
         $getFilter = function () {
             return $this->filter;
         };
