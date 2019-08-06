@@ -126,6 +126,7 @@ class SCIMConfig
                         'region' => null,
                         'postalCode' => null,
                         'country' => null,
+                        'type' => null,
                     ]],
                     'groups' => [[
                         'value' => null,
