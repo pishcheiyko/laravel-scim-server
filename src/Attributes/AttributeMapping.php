@@ -65,7 +65,7 @@ class AttributeMapping
     public static function noMapping(AttributeMapping $parent = null): AttributeMapping
     {
         return (new AttributeMapping())
-            ->disableWrite()
+            ->ignoreWrite()
             ->ignoreRead()
             ->setParent($parent);
     }
