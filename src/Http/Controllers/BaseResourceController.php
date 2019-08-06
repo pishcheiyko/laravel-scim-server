@@ -254,8 +254,12 @@ class BaseResourceController extends BaseController
                             $operation['path']
                         );
 
-                        foreach ($operation['value'] as $value) {
-                            $attributeConfig->add($value, $resourceObject);
+                        if (is_array($operation['value'])) {
+                            foreach ($operation['value'] as $value) {
+                                $attributeConfig->add($value, $resourceObject);
+                            }
+                        } else {
+                            $attributeConfig->add($operation['value'], $resourceObject);
                         }
                     } else {
                         foreach ($operation['value'] as $key => $value) {
@@ -264,8 +268,12 @@ class BaseResourceController extends BaseController
                                 $key
                             );
 
-                            foreach ($value as $v) {
-                                $attributeConfig->add($v, $resourceObject);
+                            if (is_array($value)) {
+                                foreach ($value as $v) {
+                                    $attributeConfig->add($v, $resourceObject);
+                                }
+                            } else {
+                                $attributeConfig->add($value, $resourceObject);
                             }
                         }
                     }
