@@ -103,8 +103,12 @@ class Collection extends AttributeMapping
 
         $parent = $this;
 
+        $eloquentAttributes = static::ensureAttributeMappingObject(
+            $this->collection[0][$key]
+        )->getEloquentAttributes();
+
         return (new CollectionValue())
-            ->setEloquentAttributes($this->collection[0][$key]->getEloquentAttributes())
+            ->setEloquentAttributes($eloquentAttributes)
             ->setKey($key)
             ->setParent($this)
             ->setAdd(function ($value, &$object) use ($key, $parent) {
