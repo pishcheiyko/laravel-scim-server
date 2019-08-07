@@ -732,8 +732,7 @@ class AttributeMapping
                 ->setKey($key)
                 ->setSchema($schema);
         } else {
-            throw (new SCIMException(sprintf('No mapping for "%s" in "%s"', $key, $this->getFullKey())))
-                ->setHttpCode(400);
+            return $this->noMapping($this);
         }
     }
 
