@@ -5,7 +5,6 @@ namespace UniqKey\Laravel\SCIMServer\Http\Controllers;
 use Illuminate\Http\Request;
 use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
 use UniqKey\Laravel\SCIMServer\SCIM\ResourceType;
-use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 use UniqKey\Laravel\SCIMServer\SCIMConfig;
 
@@ -25,7 +24,7 @@ class ResourceTypesController extends BaseController
                 $key,
                 $key,
                 $value['description'] ?? null,
-                Schema::SCHEMA_USER
+                $value['schema']
             );
         }
 

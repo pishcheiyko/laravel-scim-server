@@ -41,7 +41,7 @@ class SCIMConfig
                 Schema::SCHEMA_USER . ':roles.*.value' => 'required',
             ],
             'singular' => 'User',
-            'schema' => [Schema::SCHEMA_USER],
+            'schema' => Schema::SCHEMA_USER,
             //eager loading
             'withRelations' => [],
             'map_unmapped' => true,

@@ -10,24 +10,24 @@ use UniqKey\Laravel\SCIMServer\SCIMConfig;
 
 class SchemaController extends BaseController
 {
+    /** @var \Illuminate\Support\Collection|null */
     protected $schemas = null;
 
+    /**
+     * @return \Illuminate\Support\Collection
+     * @throws SCIMException
+     */
     public function getSchemas()
     {
         if (null !== $this->schemas) {
             return $this->schemas;
         }
 
-        $config = resolve(SCIMConfig::class)->getConfig();
         $schemas = [];
+        $config = $this->getScimConfig();
 
         foreach ($config as $key => $value) {
-            if ($key != 'Users' && $key != 'Group') {
-                continue;
-            }
-
-            // TODO: FIX THIS. Schema is now an array but should be a string
-            $schema = (new SchemaBuilderV2())->get($value['schema'][0]);
+            $schema = (new SchemaBuilderV2())->get($value['schema']);
 
             if ($schema == null) {
                 throw (new SCIMException('Schema not found'))
@@ -48,7 +48,22 @@ class SchemaController extends BaseController
         return $this->schemas;
     }
 
-    public function show($id)
+    /**
+     * @return array
+     */
+    protected function getScimConfig(): array
+    {
+        return array_filter(resolve(SCIMConfig::class)->getConfig(), function ($key) {
+            return in_array($key, ['Users', 'Group',]);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * @param string $id
+     * @return array
+     * @throws SCIMException
+     */
+    public function show(string $id)
     {
         $schemas = $this->getSchemas();
 
@@ -64,6 +79,9 @@ class SchemaController extends BaseController
         return $result;
     }
 
+    /**
+     * @return ListResponse
+     */
     public function index()
     {
         return new ListResponse($this->getSchemas(), 1, $this->getSchemas()->count());

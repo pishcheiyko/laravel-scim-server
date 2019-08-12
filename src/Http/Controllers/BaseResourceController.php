@@ -156,10 +156,10 @@ class BaseResourceController extends BaseController
         $helper = resolve(SCIMHelper::class);
 
         $originalRaw = $helper->objectToSCIMArray($resourceObject, $resourceType);
-        $original = $helper->flatten($originalRaw, $resourceType->getSchema());
+        $original = $helper->flatten($originalRaw, [$resourceType->getSchema()]);
 
         // TODO: get flattend from $resourceObject
-        $flattened = $helper->flatten($request->input(), $resourceType->getSchema());
+        $flattened = $helper->flatten($request->input(), [$resourceType->getSchema()]);
         $flattened = $this->validateScim($resourceType, $flattened, $resourceObject);
 
         $updated = [];
@@ -322,7 +322,7 @@ class BaseResourceController extends BaseController
 
         $newObject = $helper->flatten(
             $helper->objectToSCIMArray($resourceObject, $resourceType),
-            $resourceType->getSchema()
+            [$resourceType->getSchema()]
         );
         $flattened = $this->validateScim($resourceType, $newObject, $resourceObject);
 

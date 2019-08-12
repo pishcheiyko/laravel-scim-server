@@ -11,7 +11,9 @@ class ServiceProviderController extends BaseController
     public function index()
     {
         return [
-            'schemas' => [Schema::SCHEMA_SERVICE_PROVIDER_CONFIG],
+            'schemas' => [
+                Schema::SCHEMA_SERVICE_PROVIDER_CONFIG,
+            ],
             'patch' => [
                 'supported' => true,
             ],

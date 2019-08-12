@@ -49,9 +49,9 @@ class ResourceType
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getSchema()
+    public function getSchema(): ?string
     {
         return $this->configuration['schema'];
     }
@@ -100,7 +100,8 @@ class ResourceType
         }
 
         foreach ($mapping as $key => $value) {
-            if ($value instanceof AttributeMapping && $value != null) {
+            if ($value instanceof AttributeMapping
+            &&  null !== $value) {
                 $result[] = $value;
             } elseif (is_array($value)) {
                 $extra = $this->getAllAttributeConfigs($value);

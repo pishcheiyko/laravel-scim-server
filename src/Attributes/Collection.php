@@ -89,7 +89,7 @@ class Collection extends AttributeMapping
     /**
      * {@inheritdoc}
      */
-    public function getSubNode(?string $key, $schema = null): ?AttributeMapping
+    public function getSubNode(?string $key, string $schema = null): ?AttributeMapping
     {
         if (null === $key) {
             return $this;
@@ -196,11 +196,11 @@ class Collection extends AttributeMapping
             case 'sw':
             case 'ew':
                 throw (new SCIMException("'{$operator}' is not supported for attribute '{$attribute}'"))
-                    ->setHttpCode(501);
+                    ->setHttpCode(400);
                 break;
             default:
                 throw (new SCIMException("Not supported operator '{$operator}'"))
-                    ->setHttpCode(501);
+                    ->setHttpCode(400);
                 break;
         }
 
@@ -272,10 +272,21 @@ class Collection extends AttributeMapping
 
     /**
      * {@inheritdoc}
+     *
+     * @throws SCIMException
      */
-    public function applyWhereCondition(&$query, string $operator, $value)
+    public function applyWhereCondition(&$query, string $operator, $value, array $extra = [])
     {
-        throw (new SCIMException("Filter is not supported for attribute '{$this->getFullKey()}'"))
-            ->setHttpCode(501);
+        if (false === isset($extra['key'])  // JIC
+        ||  true === empty($this->collection)
+        ||  false === is_array($this->collection[0])
+        ||  false === array_key_exists($extra['key'], $this->collection[0])) {
+            throw (new SCIMException('Internal error'))
+                ->setHttpCode(500);
+        }
+
+        $key = $extra['key'];
+        $mapping = static::ensureAttributeMappingObject($this->collection[0][$key]);
+        return $mapping->applyWhereCondition($query, $operator, $value);
     }
 }

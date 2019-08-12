@@ -18,6 +18,7 @@ use Tmilos\ScimFilterParser\Ast\Path;
 use Tmilos\ScimFilterParser\Ast\AttributePath;
 use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\Attributes\AttributeMapping;
+use UniqKey\Laravel\SCIMServer\Attributes\Collection;
 use UniqKey\Laravel\SCIMServer\Exceptions\SCIMException;
 
 class SCIMHelper
@@ -65,55 +66,55 @@ class SCIMHelper
         Arrayable $object,
         ResourceType $resourceType = null
     ): array {
-        $userArray = $object->toArray();
+        $data = $object->toArray();
 
         // If the getDates-method exists, ensure proper formatting of date attributes
         if (method_exists($object, 'getDates')) {
             $dateAttributes = $object->getDates();
 
             foreach ($dateAttributes as $dateAttribute) {
-                if (isset($userArray[$dateAttribute])) {
-                    $userArray[$dateAttribute] = $object->getAttribute($dateAttribute)->format('c');
+                if (isset($data[$dateAttribute])) {
+                    $data[$dateAttribute] = $object->getAttribute($dateAttribute)->format('c');
                 }
             }
         }
 
-        if (null !== $resourceType) {
-            $result = [];
-
-            $mapping = $resourceType->getMapping();
-
-            $uses = $mapping->getEloquentAttributes();
-
-            $result = $mapping->read($object);
-
-            foreach ($uses as $key) {
-                unset($userArray[$key]);
-            }
-
-            if (!empty($userArray)
-            &&  (($resourceType->getConfiguration()['map_unmapped']) ?? false)) {
-                $namespace = $resourceType->getConfiguration()['unmapped_namespace'] ?? null;
-
-                if (null !== $namespace) {
-                    if (!isset($result[$namespace])) {
-                        $result[$namespace] = [];
-                    }
-
-                    $parent = &$result[$namespace];
-                } else {
-                    $parent = &$result;
-                }
-
-                foreach ($userArray as $key => $value) {
-                    $parent[$key] = AttributeMapping::eloquentAttributeToString($value);
-                }
-            }
-
-            return $result;
-        } else {
-            return $userArray;
+        if (null === $resourceType) {
+            return $data;
         }
+
+        $result = [];
+
+        $mapping = $resourceType->getMapping();
+
+        $uses = $mapping->getEloquentAttributes();
+
+        $result = $mapping->read($object);
+
+        foreach ($uses as $key) {
+            unset($data[$key]);
+        }
+
+        if (false === empty($data)
+        &&  (($resourceType->getConfiguration()['map_unmapped']) ?? false)) {
+            $namespace = $resourceType->getConfiguration()['unmapped_namespace'] ?? null;
+
+            if (null !== $namespace) {
+                if (!isset($result[$namespace])) {
+                    $result[$namespace] = [];
+                }
+
+                $parent = &$result[$namespace];
+            } else {
+                $parent = &$result;
+            }
+
+            foreach ($data as $key => $value) {
+                $parent[$key] = AttributeMapping::eloquentAttributeToString($value);
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -172,16 +173,13 @@ class SCIMHelper
     public static function scimFilterToLaravelQuery(ResourceType $resourceType, &$query, $node)
     {
         if ($node instanceof Negation) {
-            $filter = $node->getFilter();
-
-            throw (new SCIMException('Negation filters not supported'))
+            throw (new SCIMException('Negation filters are not supported'))
                 ->setHttpCode(400)
                 ->setScimType('invalidFilter');
         } elseif ($node instanceof ComparisonExpression) {
             $operator = strtolower($node->operator);
 
             $attributeConfig = $resourceType->getMapping()->getSubNodeWithPath($node);
-
             $attributeConfig->applyWhereCondition($query, $operator, $node->compareValue);
         } elseif ($node instanceof Conjunction) {
             foreach ($node->getFactors() as $factor) {
@@ -196,31 +194,24 @@ class SCIMHelper
                 });
             }
         } elseif ($node instanceof ValuePath) {
-            // ->filer
-            $getAttributePath = function () {
-                return $this->attributePath;
-            };
-
             $getFilter = function () {
                 return $this->filter;
             };
+            $scimFilter = $getFilter->call($node);
+            $attributePath = $scimFilter->attributePath;
+            $key = $attributePath->attributeNames[0];
+            $compareValue = $scimFilter->compareValue;
+            $operator = $scimFilter->operator;
 
-            $query->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('users AS users2')
-                    ->whereRaw('users.id = users2.id');
-            });
-
-        //$node->
+            $attributeConfig = $resourceType->getMapping()->getSubNodeWithPath($node);
+            $attributeConfig->applyWhereCondition($query, $operator, $compareValue, ['key' => $key]);
         } elseif ($node instanceof Factor) {
-            throw new \RuntimeException('Not ok hier! '.var_export($node, true));
+            throw (new SCIMException('Factors are not supported'))
+                ->setHttpCode(400);
         }
     }
 
     /**
-     * @todo See 'TODO:' below..
-     * @todo How about groups?
-     *
      * @param string $scimAttribute
      * @return mixed
      */
@@ -235,9 +226,10 @@ class SCIMHelper
 
         // TODO: FIX this. If $scimAttribute is a schema-indication,
         //       it should be considered as a schema.
-        if ($scimAttribute == Schema::SCHEMA_USER) {
+        if (Schema::SCHEMA_USER == $scimAttribute
+        ||  Schema::SCHEMA_GROUP == $scimAttribute) {
             $attributePath = new AttributePath();
-            $attributePath->schema = Schema::SCHEMA_USER;
+            $attributePath->schema = $scimAttribute;
 
             $path = Path::fromAttributePath($attributePath);
         }
@@ -248,7 +240,7 @@ class SCIMHelper
     /**
      * $scimAttribute could be
      * - urn:ietf:params:scim:schemas:core:2.0:User.userName
-     * - userName
+     * - userName == $scimAttribute
      * - urn:ietf:params:scim:schemas:core:2.0:User.userName.name.formatted
      * - urn:ietf:params:scim:schemas:core:2.0:User.emails.value
      * - emails.value

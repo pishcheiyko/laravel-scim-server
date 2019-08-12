@@ -46,7 +46,7 @@ class Error implements Jsonable
     public function toJson($options = 0)
     {
         return json_encode(array_filter([
-            'schemas' => [Schema::SCHEMA_ERROR],
+            'schemas' => [Schema::SCHEMA_ERROR,],
             'detail' => $this->detail,
             'status' => $this->status,
             'scimType' => ($this->status == 400 ? $this->scimType : null),

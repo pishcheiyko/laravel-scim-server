@@ -39,9 +39,9 @@ class AttributeMapping
     public $eloquentAttributes = [];
     /** @var string|null */
     public $eloquentReadAttribute = null;
-    /** @var mixed|null */
+    /** @var string|null */
     protected $defaultSchema = null;
-    /** @var mixed|null */
+    /** @var string|null */
     protected $schema = null;
     /** @var mixed|null */
     protected $filter = null;
@@ -207,37 +207,37 @@ class AttributeMapping
     }
 
     /**
-     * @param mixed $schema
+     * @param string|null $schema
      * @return $this
      */
-    public function setSchema($schema): AttributeMapping
+    public function setSchema(?string $schema): AttributeMapping
     {
         $this->schema = $schema;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getSchema()
+    public function getSchema(): ?string
     {
         return $this->schema;
     }
 
     /**
-     * @param mixed $schema
+     * @param string|null $schema
      * @return $this
      */
-    public function setDefaultSchema($schema): AttributeMapping
+    public function setDefaultSchema(?string $schema): AttributeMapping
     {
         $this->defaultSchema = $schema;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getDefaultSchema()
+    public function getDefaultSchema(): ?string
     {
         return $this->defaultSchema;
     }
@@ -711,11 +711,11 @@ class AttributeMapping
      * Uses for example for creating queries ... and sorting
      *
      * @param string|null $key
-     * @param mixed|null $schema
+     * @param string|null $schema
      * @return AttributeMapping|null
      * @throws SCIMException
      */
-    public function getSubNode(?string $key, $schema = null): ?AttributeMapping
+    public function getSubNode(?string $key, string $schema = null): ?AttributeMapping
     {
         if (null !== $this->getSubNode) {
             return ($this->getSubNode)($key, $schema);
@@ -782,14 +782,18 @@ class AttributeMapping
         /**
          * The first schema should be the default one.
          */
-        $schema = $attributePath->schema ?? $this->getDefaultSchema()[0];
+        $schema = $attributePath->schema ?? $this->getDefaultSchema();
 
         if (false === empty($schema)
         &&  false === empty($this->getSchema())
         &&  $this->getSchema() != $schema) {
-            throw (new SCIMException(sprintf('Trying to get attribute for schema "%s". But schema is already "%s"', $attributePath->schema, $this->getSchema())))
-                ->setHttpCode(400)
-                ->setScimType('noTarget');
+            throw (new SCIMException(sprintf(
+                'Trying to get attribute for schema "%s". But schema is already "%s"',
+                $attributePath->schema,
+                $this->getSchema()
+            )))
+            ->setHttpCode(400)
+            ->setScimType('noTarget');
         }
 
         $elements = [];
@@ -801,7 +805,7 @@ class AttributeMapping
         if (empty($attributePath->attributeNames) && !empty($schema)) {
             $elements[] = $schema;
         } elseif (empty($this->getSchema()) && !in_array($attributePath->attributeNames[0], Schema::ATTRIBUTES_CORE)) {
-            $elements[] = $schema ?? (is_array($this->getDefaultSchema()) ? $this->getDefaultSchema()[0] : $this->getDefaultSchema());
+            $elements[] = $schema ?? $this->getDefaultSchema();
         }
 
         foreach ($attributePath->attributeNames as $a) {
@@ -869,9 +873,10 @@ class AttributeMapping
      * @param mixed $query
      * @param string $operator
      * @param mixed $value
+     * @param array $extra  some extra data, e.g. Collection uses this one..
      * @throws SCIMException
      */
-    public function applyWhereCondition(&$query, string $operator, $value)
+    public function applyWhereCondition(&$query, string $operator, $value, array $extra = [])
     {
         //only filter on OWN eloquent attributes
         if (empty($this->eloquentAttributes)) {
@@ -881,7 +886,7 @@ class AttributeMapping
 
         $attribute = $this->eloquentAttributes[0];
 
-        if ($this->relationship != null) {
+        if (null !== $this->relationship) {
             $query->whereHas($this->relationship, function ($query) use ($attribute, $operator, $value) {
                 $this->applyWhereConditionDirect($attribute, $query, $operator, $value);
             })->get();
