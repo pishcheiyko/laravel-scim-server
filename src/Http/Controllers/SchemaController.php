@@ -54,7 +54,7 @@ class SchemaController extends BaseController
     protected function getScimConfig(): array
     {
         return array_filter(resolve(SCIMConfig::class)->getConfig(), function ($key) {
-            return in_array($key, ['Users', 'Group',]);
+            return in_array($key, ['Users', 'Groups',]);
         }, ARRAY_FILTER_USE_KEY);
     }
 
