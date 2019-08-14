@@ -123,12 +123,7 @@ class BaseResourceController extends BaseController
             $allAttributeConfigs[] = $attributeConfig;
         }
 
-        try {
-            $resourceObject->save();
-        } catch (QueryException $e) {
-            throw (new SCIMException("Could not save new {$class} instance", 0, $e))
-                ->setHttpCode(500);
-        }
+        $this->saveModel($resourceObject);
 
         foreach ($allAttributeConfigs as &$attributeConfig) {
             $fullKey = $attributeConfig->getFullKey();
@@ -139,6 +134,21 @@ class BaseResourceController extends BaseController
 
         $response = $helper->objectToSCIMCreateResponse($resourceObject, $resourceType);
         return $response;
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @throws SCIMException
+     */
+    protected function saveModel(Model $resourceObject)
+    {
+        try {
+            $resourceObject->save();
+        } catch (QueryException $e) {
+            $class = get_class($resourceObject);
+            throw (new SCIMException("Could not save new {$class} instance", 0, $e))
+                ->setHttpCode(500);
+        }
     }
 
     /**
