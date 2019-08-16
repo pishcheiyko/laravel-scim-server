@@ -152,7 +152,7 @@ class AttributeMapping
     public static function eloquent(
         string $eloquentAttribute,
         AttributeMapping $parent = null
-    ) : AttributeMapping {
+    ): AttributeMapping {
         return (new EloquentAttributeMapping())
             ->setEloquentReadAttribute($eloquentAttribute)
             ->setParent($parent)
@@ -665,7 +665,7 @@ class AttributeMapping
     public static function ensureAttributeMappingObject(
         $attributeMapping,
         AttributeMapping $parent = null
-    ) : ?AttributeMapping {
+    ): ?AttributeMapping {
         $result = null;
 
         if (null === $attributeMapping) {
