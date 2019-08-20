@@ -27,6 +27,14 @@ class SCIMException extends Exception
     }
 
     /**
+     * @return string
+     */
+    public function getScimType(): string
+    {
+        return $this->scimType;
+    }
+
+    /**
      * @param int $code
      * @return $this
      */
@@ -37,6 +45,14 @@ class SCIMException extends Exception
     }
 
     /**
+     * @return int
+     */
+    public function getHttpCode(): int
+    {
+        return $this->httpCode;
+    }
+
+    /**
      * @param array $errors
      * @return $this
      */
@@ -44,6 +60,14 @@ class SCIMException extends Exception
     {
         $this->errors = $errors;
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getErrors(): array
+    {
+        return $this->errors;
     }
 
     /**
