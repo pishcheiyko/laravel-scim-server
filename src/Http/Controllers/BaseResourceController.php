@@ -123,7 +123,31 @@ class BaseResourceController extends BaseController
             $allAttributeConfigs[] = $attributeConfig;
         }
 
-        $this->saveModel($resourceObject);
+        $resourceObject = $this->saveModel($resourceObject, $allAttributeConfigs, $flattened);
+
+        $response = $helper->objectToSCIMCreateResponse($resourceObject, $resourceType);
+        return $response;
+    }
+
+    /**
+     * @param Model $resourceObject
+     * @param array $allAttributeConfigs
+     * @param array $flattened
+     * @return Model
+     * @throws SCIMException
+     */
+    protected function saveModel(
+        Model $resourceObject,
+        array $allAttributeConfigs,
+        array $flattened
+    ): Model {
+        try {
+            $resourceObject->save();
+        } catch (QueryException $e) {
+            $class = get_class($resourceObject);
+            throw (new SCIMException("Could not save new {$class} instance", 0, $e))
+                ->setHttpCode(500);
+        }
 
         foreach ($allAttributeConfigs as &$attributeConfig) {
             $fullKey = $attributeConfig->getFullKey();
@@ -132,23 +156,7 @@ class BaseResourceController extends BaseController
 
         $this->fireCreateEvent($resourceObject);
 
-        $response = $helper->objectToSCIMCreateResponse($resourceObject, $resourceType);
-        return $response;
-    }
-
-    /**
-     * @param Model $resourceObject
-     * @throws SCIMException
-     */
-    protected function saveModel(Model $resourceObject)
-    {
-        try {
-            $resourceObject->save();
-        } catch (QueryException $e) {
-            $class = get_class($resourceObject);
-            throw (new SCIMException("Could not save new {$class} instance", 0, $e))
-                ->setHttpCode(500);
-        }
+        return $resourceObject;
     }
 
     /**
