@@ -17,7 +17,7 @@ class SCIMHeaders
     public function handle(Request $request, Closure $next)
     {
         if (false === $request->isMethod('get')
-        &&  false === $this->isValidContentType($request->header('content-type'))
+        &&  false === $this->isValidContentType($request)
         &&  strlen($request->getContent()) > 0) {
             throw (new SCIMException('The content-type header should be set to "application/scim+json".'))
                 ->setHttpCode(400);
@@ -29,11 +29,16 @@ class SCIMHeaders
     }
 
     /**
-     * @param string $header
+     * @param Request $request
      * @return bool
      */
-    protected function isValidContentType(string $header): bool
+    protected function isValidContentType(Request $request): bool
     {
+        if (false === $request->hasHeader('content-type')) {
+            return false;
+        }
+
+        $header = $request->header('content-type', '');
         $chunks = explode(';', $header);
         $contentType = $chunks[0];
 
