@@ -56,8 +56,8 @@ class SCIMConfig
                     'lastModified' => AttributeMapping::eloquent('updated_at')->disableWrite(),
                     'location' => (new AttributeMapping())->setRead(function ($object) {
                         return resolve(SCIMRoutes::class)->route('scim.resource', [
-                            'name' => 'Users',
-                            'id' => $object->id,
+                            'resourceType' => 'Users',
+                            'resourceObject' => $object->id,
                         ]);
                     })->disableWrite(),
                     'resourceType' => AttributeMapping::constant('User'),
