@@ -123,7 +123,7 @@ class BaseResourceController extends BaseController
             $allAttributeConfigs[] = $attributeConfig;
         }
 
-        $resourceObject = $this->saveModel($resourceObject, $allAttributeConfigs, $flattened);
+        $resourceObject = $this->saveNewModel($resourceObject, $allAttributeConfigs, $flattened);
 
         $response = $helper->objectToSCIMCreateResponse($resourceObject, $resourceType);
         return $response;
@@ -136,7 +136,7 @@ class BaseResourceController extends BaseController
      * @return Model
      * @throws SCIMException
      */
-    protected function saveModel(
+    protected function saveNewModel(
         Model $resourceObject,
         array $allAttributeConfigs,
         array $flattened
