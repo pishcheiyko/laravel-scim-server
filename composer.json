@@ -1,5 +1,5 @@
 {
-    "name": "uniqkey/laravel-scim-server",
+    "name": "tapapp/laravel-scim-server",
     "type": "library",
     "description": "Laravel Package for creating a SCIM server. The package forked from arietimmerman/laravel-scim-server",
     "license": "MIT",
@@ -11,6 +11,10 @@
         {
             "name": "Arie Timmerman",
             "email": "arietimmerman@gmail.com"
+        },
+        {
+            "name": "Oleksandr Pishcheiyko",
+            "email": "pishcheiyko@gmail.com"
         }
     ],
     "require": {
