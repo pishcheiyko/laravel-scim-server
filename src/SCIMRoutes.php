@@ -19,8 +19,10 @@ class SCIMRoutes
      */
     public function getOptions(): array
     {
+
+
         return [
-            'prefix' => 'scim',
+            'prefix' => request()->has('organization') ? request()->get('organization') . '/scim' : 'scim',
             'middleware' => [SubstituteBindings::class,],
             'v2' => [
                 'middleware' => [SCIMHeaders::class,],
