@@ -34,6 +34,9 @@ class RouteServiceProvider extends BaseServiceProvider
     {
         $options = resolve(SCIMRoutes::class)->getOptions();
 
+        //TODO temporary added
+        array_push($options['middleware'], 'scim');
+
         Route::prefix($options['prefix'])
             ->middleware($options['middleware'])
             ->group(function () {
