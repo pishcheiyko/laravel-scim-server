@@ -172,7 +172,7 @@ class ResourceController extends BaseResourceController
                     $usersOrganizationsRelationClass = config('scim_models.usersOrganizationsRelations');
                     $usersIds = $usersOrganizationsRelationClass::where('organization_id', $gSuiteOrg->organization_id)
                         ->pluck('user_id')
-                        ->toArry();
+                        ->toArray();
                     if($usersIds){
                         return $resourceObjectsBase->whereIn('id', $usersIds);
                     }
