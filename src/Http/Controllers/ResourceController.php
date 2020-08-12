@@ -110,6 +110,9 @@ class ResourceController extends BaseResourceController
             }
         );
 
+
+        $resourceObjectsBase = $this->applyCustomFilters($resourceObjectsBase);
+
         $totalResults = $resourceObjectsBase->count();
 
         /**
@@ -154,5 +157,28 @@ class ResourceController extends BaseResourceController
             $excludedAttributes,
             $resourceType
         ));
+    }
+
+    /**
+     * @param $resourceObjectsBase
+     */
+    public function applyCustomFilters($resourceObjectsBase){
+        if(request()->has('organization')){
+            $org = request()->get('organization');
+            $gSuiteOrganizationClass = config('scim_models.gSuiteOrganization');
+            if($gSuiteOrganizationClass){
+                $gSuiteOrg = $gSuiteOrganizationClass::where('name', 'like', "%$org%")->first();
+                if($gSuiteOrg){
+                    $usersOrganizationsRelationClass = config('scim_models.usersOrganizationsRelations');
+                    $usersIds = $usersOrganizationsRelationClass::where('organization_id', $gSuiteOrg->organization_id)
+                        ->pluck('user_id')
+                        ->toArry();
+                    if($usersIds){
+                        return $resourceObjectsBase->whereIn('id', $usersIds);
+                    }
+                }
+            }
+        }
+        return $resourceObjectsBase;
     }
 }
