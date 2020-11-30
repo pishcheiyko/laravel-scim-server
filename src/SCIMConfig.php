@@ -105,7 +105,7 @@ class SCIMConfig
                         'value' => AttributeMapping::eloquent('phone'),
                         'display' => null,
                         'type' => AttributeMapping::constant('mobile')->ignoreWrite(),
-                        'primary' => AttributeMapping::constant(true)->ignoreWrite(),
+                        'primary' => AttributeMapping::constant(false)->ignoreWrite(),
                     ],[
                         'value' => AttributeMapping::eloquent('phone'),
                         'display' => null,
