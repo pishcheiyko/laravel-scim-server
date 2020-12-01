@@ -165,9 +165,16 @@ class ResourceController extends BaseResourceController
     public function applyCustomFilters($resourceObjectsBase){
         if(request()->has('organization')){
             $org = request()->get('organization');
-            $gSuiteOrganizationClass = config('scim_models.gSuiteOrganization');
-            if($gSuiteOrganizationClass){
-                $gSuiteOrg = $gSuiteOrganizationClass::where('name', 'like', "%$org%")->first();
+
+            if(request()->get('SCIM_TYPE') == 'google'){
+                $scimOrganizationClass = config('scim_models.gSuiteOrganization');
+            }
+            if(request()->get('SCIM_TYPE') == 'azure'){
+                $scimOrganizationClass = config('scim_models.activeDirectoryOrganization');
+            }
+
+            if(isset($scimOrganizationClass) && $scimOrganizationClass){
+                $gSuiteOrg = $scimOrganizationClass::where('name', 'like', "%$org%")->first();
                 if($gSuiteOrg){
                     $usersOrganizationsRelationClass = config('scim_models.usersOrganizationsRelations');
                     $usersIds = $usersOrganizationsRelationClass::where('organization_id', $gSuiteOrg->organization_id)
