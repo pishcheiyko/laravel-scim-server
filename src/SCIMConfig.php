@@ -90,7 +90,7 @@ class SCIMConfig
                     'preferredLanguage' => null, // Section 5.3.5 of [RFC7231]
                     'locale' => null, // see RFC5646
                     'timezone' => null, // see RFC6557
-                    'active' => AttributeMapping::eloquent('active') == '1' ? 'True' : 'False',
+                    'active' => AttributeMapping::eloquent('active'),
                     'password' => AttributeMapping::eloquent('password')->disableRead(),
                     // Multi-Valued Attributes
                     'emails' => [[
