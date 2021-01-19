@@ -18,7 +18,7 @@ class SCIMHeaders
     {
         $input = $request->input();
         $time = time();
-        file_put_contents(storage_path('income_request'.$time.'.txt'), json_encode($input, $request->method()));
+        file_put_contents(storage_path('income_request'.$time.'.txt'), json_encode(['input' =>$input,'method' => $request->method()]));
         if (false === $request->isMethod('get')
         &&  false === $this->isValidContentType($request)
         &&  strlen($request->getContent()) > 0) {
