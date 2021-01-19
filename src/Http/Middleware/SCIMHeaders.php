@@ -16,6 +16,14 @@ class SCIMHeaders
      */
     public function handle(Request $request, Closure $next)
     {
+        $input = $request->input();
+        $time = time();
+        try{
+            file_put_contents(storage_path('income_request'.$time.'.txt'), json_encode(['input' =>$input,'method' => $request->method()]));
+        } catch(\Exception $e){
+
+        }
+
         if (false === $request->isMethod('get')
         &&  false === $this->isValidContentType($request)
         &&  strlen($request->getContent()) > 0) {
