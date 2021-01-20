@@ -244,7 +244,10 @@ class BaseResourceController extends BaseController
         ResourceType $resourceType,
         Model $resourceObject
     ): Response {
+
         $input = $request->input();
+        $time = time();
+        file_put_contents(storage_path('input_'.$time.'.txt'), json_encode($input));
 
         if ($input['schemas'] !== [Schema::SCHEMA_PATCH_OP]) {
             throw (new SCIMException(sprintf(
@@ -262,6 +265,8 @@ class BaseResourceController extends BaseController
         $helper = resolve(SCIMHelper::class);
 
         $oldObject = $helper->objectToSCIMArray($resourceObject, $resourceType);
+
+        file_put_contents(storage_path('old_object'.$time.'.txt'), json_encode($oldObject));
 
         foreach ($input['Operations'] as $operation) {
             switch (strtolower($operation['op'])) {
