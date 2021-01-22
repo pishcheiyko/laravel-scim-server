@@ -41,7 +41,7 @@ class SCIMConfig
                 Schema::SCHEMA_USER . ':phoneNumbers.*.value' => 'required|string',
                 Schema::SCHEMA_USER . ':roles' => 'nullable|array',
                 Schema::SCHEMA_USER . ':roles.*.value' => 'required',
-                Schema::SCHEMA_USER . ':nickName' => 'nullable|string',
+                Schema::SCHEMA_USER . ':title' => 'nullable|string',
             ],
             'singular' => 'User',
             'schema' => Schema::SCHEMA_USER,
@@ -83,9 +83,9 @@ class SCIMConfig
                         'honorificSuffix' => null,
                     ],
                     'displayName' => null,
-                    'nickName' => AttributeMapping::eloquent('role'),
+                    'nickName' => null,
                     'profileUrl' => null,
-                    'title' => null,
+                    'title' => AttributeMapping::eloquent('role'),
                     'userType' => null,
                     'preferredLanguage' => null, // Section 5.3.5 of [RFC7231]
                     'locale' => null, // see RFC5646
@@ -108,12 +108,12 @@ class SCIMConfig
                         'value' => AttributeMapping::eloquent('phone'),
                         'display' => null,
                         'type' => AttributeMapping::constant('mobile')->ignoreWrite(),
-                        'primary' => AttributeMapping::constant(false)->ignoreWrite(),
+                        'primary' => AttributeMapping::constant(true)->ignoreWrite(),
                     ],[
                         'value' => AttributeMapping::eloquent('phone'),
                         'display' => null,
                         'type' => AttributeMapping::constant('work')->ignoreWrite(),
-                        'primary' => AttributeMapping::constant(true)->ignoreWrite(),
+                        'primary' => AttributeMapping::constant(false)->ignoreWrite(),
                     ]],
                     'ims' => [[
                         'value' => null,
