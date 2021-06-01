@@ -35,8 +35,6 @@ class SCIMConfig
                 Schema::SCHEMA_USER . ':userName' => 'required',
                 Schema::SCHEMA_USER . ':password' => 'nullable',
                 Schema::SCHEMA_USER . ':active' => 'required',
-                Schema::SCHEMA_USER . ':emails' => 'required|array',
-                Schema::SCHEMA_USER . ':emails.*.value' => 'required|email',
                 Schema::SCHEMA_USER . ':phoneNumbers' => 'nullable|array',
                 Schema::SCHEMA_USER . ':phoneNumbers.*.value' => 'required|string',
                 Schema::SCHEMA_USER . ':roles' => 'nullable|array',
