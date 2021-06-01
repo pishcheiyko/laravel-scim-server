@@ -73,7 +73,7 @@ class SCIMConfig
                     'cityPrefix' => AttributeMapping::eloquent('cityPrefix'),
                 ],
                 Schema::SCHEMA_USER => [
-                    'userName' => AttributeMapping::eloquent('name'),
+                    'userName' => AttributeMapping::eloquent('email'),
                     'name' => [
                         'formatted' => AttributeMapping::eloquent('name'),
                         'familyName' => null,
@@ -82,7 +82,7 @@ class SCIMConfig
                         'honorificPrefix' => null,
                         'honorificSuffix' => null,
                     ],
-                    'displayName' => null,
+                    'displayName' => AttributeMapping::eloquent('name'),
                     'nickName' => null,
                     'profileUrl' => null,
                     'title' => AttributeMapping::eloquent('role'),
