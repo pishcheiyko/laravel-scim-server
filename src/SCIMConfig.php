@@ -92,17 +92,6 @@ class SCIMConfig
                     'active' => AttributeMapping::eloquent('active'),
                     'password' => AttributeMapping::eloquent('password')->disableRead(),
                     // Multi-Valued Attributes
-                    'emails' => [[
-                            'value' => AttributeMapping::eloquent('email'),
-                            'display' => null,
-                            'type' => AttributeMapping::constant('other')->ignoreWrite(),
-                            'primary' => AttributeMapping::constant(false)->ignoreWrite(),
-                    ],[
-                            'value' => AttributeMapping::eloquent('email'),
-                            'display' => null,
-                            'type' => AttributeMapping::constant('work')->ignoreWrite(),
-                            'primary' => AttributeMapping::constant(true)->ignoreWrite(),
-                    ]],
                     'phoneNumbers' => [[
                         'value' => AttributeMapping::eloquent('phone'),
                         'display' => null,
