@@ -34,7 +34,7 @@ class SCIMConfig
             'validations' => [
                 Schema::SCHEMA_USER . ':userName' => 'required',
                 Schema::SCHEMA_USER . ':password' => 'nullable',
-                Schema::SCHEMA_USER . ':active' => 'string',
+                Schema::SCHEMA_USER . ':active' => 'nullable|boolean',
                 Schema::SCHEMA_USER . ':emails' => 'array',
                 Schema::SCHEMA_USER . ':emails.*.value' => 'email',
                 Schema::SCHEMA_USER . ':phoneNumbers' => 'nullable|array',
