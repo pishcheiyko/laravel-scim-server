@@ -28,11 +28,12 @@ class SCIMConfig
      */
     public function getUserConfig(): array
     {
+        $resourceObject = request()->route()->parameter('resourceObject');
         return [
             // Set to 'null' to make use of auth.providers.users.model (App\User::class)
             'class' => resolve(SCIMHelper::class)->getAuthUserClass(),
             'validations' => [
-                Schema::SCHEMA_USER . ':userName' => 'required',
+                Schema::SCHEMA_USER . ':userName' => 'required|unique:users,email'.($resourceObject ? ",$resourceObject" : ''),
                 Schema::SCHEMA_USER . ':password' => 'nullable',
                 Schema::SCHEMA_USER . ':active' => 'nullable|boolean',
                 Schema::SCHEMA_USER . ':emails' => 'array',
@@ -101,7 +102,7 @@ class SCIMConfig
                     ],[
                         'value' => AttributeMapping::eloquent('phone'),
                         'display' => null,
-                        'type' => AttributeMapping::constant('work')->isWriteSupported(),
+                        'type' => AttributeMapping::constant('work')->ignoreWrite(),
                         'primary' => AttributeMapping::constant(false)->ignoreWrite(),
                     ]],
                     'ims' => [[

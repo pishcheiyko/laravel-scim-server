@@ -396,9 +396,10 @@ class BaseResourceController extends BaseController
         if ($validator->fails()) {
             $e = $validator->errors();
             $e = $this->replaceKeys($e->toArray());
+            $statusCode = $this->getStatusCodeByValidation($validator);
 
             throw (new SCIMException('Invalid data!'))
-                ->setHttpCode(400)
+                ->setHttpCode($statusCode)
                 ->setScimType('invalidSyntax')
                 ->setErrors($e);
         }
@@ -594,5 +595,27 @@ class BaseResourceController extends BaseController
             throw (new SCIMException('This is not allowed'))
                 ->setHttpCode(403);
         }
+    }
+
+    /**
+     * @param $validator
+     * @return int$statusCode = 400;
+     */
+    protected function getStatusCodeByValidation($validator){
+        $statusCode = 400;
+        try{
+            $failed = $validator->failed();
+            foreach ($failed as $key=> $value){
+                foreach($value as $k => $v){
+                    if($k == 'Unique'){
+                        $statusCode = 409;
+                        break;
+                    }
+                }
+            }
+        } catch (\Exception $e){
+
+        }
+        return $statusCode;
     }
 }
