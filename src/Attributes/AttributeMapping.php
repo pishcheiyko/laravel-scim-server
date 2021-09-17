@@ -606,9 +606,17 @@ class AttributeMapping
     {
         if (null !== $this->replace) {
             return ($this->replace)($value, $object);
-        } else {
-            return $this->replaceNotImplemented($value, $object);
         }
+        if(null !== $this->parent && null !== $this->parent->collection){
+            if(is_array($this->parent->collection) && count($this->parent->collection)){
+                foreach ($this->parent->collection as $item){
+                    ($item['value']->replace)($value, $object);
+                }
+                return true;
+            }
+        }
+
+        return $this->replaceNotImplemented($value, $object);
     }
 
     /**
