@@ -72,67 +72,69 @@ class SCIMConfig
                 'example:name:space' => [
                     'cityPrefix' => AttributeMapping::eloquent('cityPrefix'),
                 ],
-                'userName' => AttributeMapping::eloquent('email'),
-                'name' => [
-                    'formatted' => AttributeMapping::eloquent('name'),
-                    'familyName' => null,
-                    'givenName' => null,
-                    'middleName' => null,
-                    'honorificPrefix' => null,
-                    'honorificSuffix' => null,
+                Schema::SCHEMA_USER => [
+                    'userName' => AttributeMapping::eloquent('email'),
+                    'name' => [
+                        'formatted' => AttributeMapping::eloquent('name'),
+                        'familyName' => null,
+                        'givenName' => null,
+                        'middleName' => null,
+                        'honorificPrefix' => null,
+                        'honorificSuffix' => null,
+                    ],
+                    'displayName' => AttributeMapping::eloquent('name'),
+                    'nickName' => null,
+                    'profileUrl' => null,
+                    'title' => AttributeMapping::eloquent('role'),
+                    'userType' => null,
+                    'preferredLanguage' => null, // Section 5.3.5 of [RFC7231]
+                    'locale' => null, // see RFC5646
+                    'timezone' => null, // see RFC6557
+                    'active' => AttributeMapping::eloquent('active'),
+                    'password' => AttributeMapping::eloquent('password')->disableRead(),
+                    // Multi-Valued Attributes
+                    'phoneNumbers' => [[
+                        'value' => AttributeMapping::eloquent('phone'),
+                        'display' => null,
+                        'type' => AttributeMapping::constant('mobile')->ignoreWrite(),
+                        'primary' => AttributeMapping::constant(true)->ignoreWrite(),
+                    ],[
+                        'value' => AttributeMapping::eloquent('phone'),
+                        'display' => null,
+                        'type' => AttributeMapping::constant('work')->ignoreWrite(),
+                        'primary' => AttributeMapping::constant(false)->ignoreWrite(),
+                    ]],
+                    'ims' => [[
+                        'value' => null,
+                        'display' => null,
+                        'type' => null,
+                        'primary' => null,
+                    ]], // Instant messaging addresses for the User
+                    'photos' => [[
+                        'value' => null,
+                        'display' => null,
+                        'type' => null,
+                        'primary' => null,
+                    ]],
+                    'addresses' => [[
+                        'formatted' => null,
+                        'streetAddress' => null,
+                        'locality' => null,
+                        'region' => null,
+                        'postalCode' => null,
+                        'country' => null,
+                        'type' => null,
+                    ]],
+                    'groups' => [[
+                        'value' => null,
+                        '$ref' => null,
+                        'display' => null,
+                        'type' => null,
+                    ]],
+                    'entitlements' => null,
+                    'roles' => null,
+                    'x509Certificates' => null,
                 ],
-                'displayName' => AttributeMapping::eloquent('name'),
-                'nickName' => null,
-                'profileUrl' => null,
-                'title' => AttributeMapping::eloquent('role'),
-                'userType' => null,
-                'preferredLanguage' => null, // Section 5.3.5 of [RFC7231]
-                'locale' => null, // see RFC5646
-                'timezone' => null, // see RFC6557
-                'active' => AttributeMapping::eloquent('active'),
-                'password' => AttributeMapping::eloquent('password')->disableRead(),
-                // Multi-Valued Attributes
-                'phoneNumbers' => [[
-                    'value' => AttributeMapping::eloquent('phone'),
-                    'display' => null,
-                    'type' => AttributeMapping::constant('mobile')->ignoreWrite(),
-                    'primary' => AttributeMapping::constant(true)->ignoreWrite(),
-                ],[
-                    'value' => AttributeMapping::eloquent('phone'),
-                    'display' => null,
-                    'type' => AttributeMapping::constant('work')->ignoreWrite(),
-                    'primary' => AttributeMapping::constant(false)->ignoreWrite(),
-                ]],
-                'ims' => [[
-                    'value' => null,
-                    'display' => null,
-                    'type' => null,
-                    'primary' => null,
-                ]], // Instant messaging addresses for the User
-                'photos' => [[
-                    'value' => null,
-                    'display' => null,
-                    'type' => null,
-                    'primary' => null,
-                ]],
-                'addresses' => [[
-                    'formatted' => null,
-                    'streetAddress' => null,
-                    'locality' => null,
-                    'region' => null,
-                    'postalCode' => null,
-                    'country' => null,
-                    'type' => null,
-                ]],
-                'groups' => [[
-                    'value' => null,
-                    '$ref' => null,
-                    'display' => null,
-                    'type' => null,
-                ]],
-                'entitlements' => null,
-                'roles' => null,
-                'x509Certificates' => null,
             ],
         ];
     }
