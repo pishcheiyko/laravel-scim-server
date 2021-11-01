@@ -79,6 +79,7 @@ class SCIMHelper
             }
         }
 
+
         if (null === $resourceType) {
             return $data;
         }
