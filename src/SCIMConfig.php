@@ -133,7 +133,7 @@ class SCIMConfig
                     ]],
                     'entitlements' => null,
                     'roles' => null,
-                    'x509Certificates' => null,
+                    'x509Certificates' => getenv('GOOGLE_CERT'),
                 ],
             ],
         ];
