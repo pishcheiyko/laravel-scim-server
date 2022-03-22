@@ -143,7 +143,10 @@ class SCIMHelper
         Model $object,
         ResourceType $resourceType = null
     ): Response {
-        return response(static::objectToSCIMArray($object, $resourceType))
+        $responseData = static::objectToSCIMArray($object, $resourceType);
+        $userData = $responseData[Schema::SCHEMA_USER];
+        unset($responseData[Schema::SCHEMA_USER]);
+        return response(array_merge($responseData, $userData))
             ->setEtag(static::getResourceObjectVersion($object));
     }
 

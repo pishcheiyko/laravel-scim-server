@@ -8,6 +8,7 @@ use Tmilos\ScimFilterParser\Parser;
 use Tmilos\ScimFilterParser\Mode;
 use Tmilos\ScimFilterParser\Error\FilterException;
 use UniqKey\Laravel\SCIMServer\ResourceType;
+use UniqKey\Laravel\SCIMServer\SCIM\Schema;
 use UniqKey\Laravel\SCIMServer\SCIMHelper;
 use UniqKey\Laravel\SCIMServer\SCIM\ListResponse;
 use UniqKey\Laravel\SCIMServer\Contracts\PolicyInterface;
@@ -146,7 +147,9 @@ class ResourceController extends BaseResourceController
         $resourceObjects = $resourceObjects->get();
         foreach ($resourceObjects as $resourceObject) {
             $item = $helper->objectToSCIMArray($resourceObject, $resourceType);
-            $result[] = $item;
+            $userData = $item[Schema::SCHEMA_USER];
+            unset($item[Schema::SCHEMA_USER]);
+            $result[] = array_merge($item, $userData);
         }
 
         return response(new ListResponse(
