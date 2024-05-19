@@ -686,7 +686,10 @@ class AttributeMapping
             }
         } elseif ($attributeMapping instanceof AttributeMapping) {
             $result = $attributeMapping->setParent($parent);
-        } else {
+        } elseif (is_string($attributeMapping)) {
+            $result = static::noMapping($parent);
+        }
+        else {
             throw (new SCIMException(sprintf('Found unknown attribute "%s"', $attributeMapping)))
                 ->setHttpCode(400);
         }
